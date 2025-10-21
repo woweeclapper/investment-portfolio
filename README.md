@@ -1,9 +1,9 @@
-Investment Dashboard
+Investment Dashboard:
 A modular, personal finance dashboard built with React + TypeScript, designed to track crypto holdings, stock positions, dividend income, and overall portfolio performance.
 
 This project emphasizes clarity, modularity, and safety nets — every action is confirmed with reusable modals, and restore buttons allow you to re‑enable confirmations locally or globally. 
 
-Core Modules
+Core Modules:
 CryptoPrices – Live crypto price feed (main + supplementary coins).
 
 CryptoHoldings – Track your crypto positions with:
