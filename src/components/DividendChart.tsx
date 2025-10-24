@@ -1,13 +1,18 @@
-import { useMemo } from 'react';
+import { Line } from 'react-chartjs-2';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
   Tooltip,
-  CartesianGrid,
-  ResponsiveContainer,
-} from 'recharts';
+  Legend,
+} from 'chart.js';
+import { chartColors } from '../utils/chartColors';
+import { baseChartOptions } from '../utils/chartOptions';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 type Dividend = {
   id: number;
@@ -16,36 +21,33 @@ type Dividend = {
   date: string;
 };
 
-interface Props {
-  dividends: Dividend[];
-}
+export default function DividendChart({ dividends }: { dividends: Dividend[] }) {
+  const monthlyMap: Record<string, number> = {};
+  const monthOrder: string[] = [];
 
-export default function DividendChart({ dividends }: Props) {
-  // Transform dividends into monthly totals
-  const data = useMemo(() => {
-    const map: Record<string, number> = {};
-    dividends.forEach((d) => {
-      const month = d.date.slice(0, 7); // YYYY-MM
-      map[month] = (map[month] || 0) + d.amount;
+  dividends
+    .slice()
+    .sort((a, b) => +new Date(a.date) - +new Date(b.date))
+    .forEach((d) => {
+      const key = new Date(d.date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+      });
+      if (!(key in monthlyMap)) monthOrder.push(key);
+      monthlyMap[key] = (monthlyMap[key] || 0) + d.amount;
     });
-    return Object.entries(map).map(([month, total]) => ({
-      month,
-      total,
-    }));
-  }, [dividends]);
 
-  return (
-    <div style={{ width: '100%', height: 300 }}>
-      <h3>Monthly Dividend Summary</h3>
-      <ResponsiveContainer>
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="total" fill="#4CAF50" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
+  const chartData = {
+    labels: monthOrder,
+    datasets: [
+      {
+        label: 'Monthly Dividends',
+        data: monthOrder.map((m) => monthlyMap[m]),
+        borderColor: chartColors.dividends.border,
+        backgroundColor: chartColors.dividends.background,
+      },
+    ],
+  };
+
+  return <Line data={chartData} options={baseChartOptions} />;
 }

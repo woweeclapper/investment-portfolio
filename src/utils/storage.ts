@@ -1,28 +1,58 @@
 const CURRENT_VERSION = 2;
 
+// Generic safe load
 export function loadData<T>(key: string, fallback: T, version = CURRENT_VERSION): T {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return fallback;
     const parsed = JSON.parse(raw);
     if (parsed._v !== version) {
-      // migrate or reset
+      // TODO: add migration logic if needed
       return fallback;
     }
-    return parsed.data;
+    return parsed.data as T;
   } catch {
     return fallback;
   }
 }
 
+// Generic safe save
 export function saveData<T>(key: string, data: T, version = CURRENT_VERSION) {
   localStorage.setItem(key, JSON.stringify({ _v: version, data }));
 }
 
-export function saveConfirmFlags(flags: Record<string, boolean>) {
-  localStorage.setItem('confirmFlags', JSON.stringify(flags));
+// 🔹 Typed confirm flags
+export type ConfirmFlags = {
+  crypto: boolean;
+  stocks: boolean;
+  dividends: boolean;
+};
+
+const DEFAULT_FLAGS: ConfirmFlags = {
+  crypto: false,
+  stocks: false,
+  dividends: false,
+};
+
+// Save confirm flags (merge with defaults)
+export function saveConfirmFlags(flags: Partial<ConfirmFlags>) {
+  const merged = { ...DEFAULT_FLAGS, ...flags };
+  localStorage.setItem('confirmFlags', JSON.stringify(merged));
 }
 
-export function loadConfirmFlags(): Record<string, boolean> {
-  return JSON.parse(localStorage.getItem('confirmFlags') || '{}');
+// Load confirm flags safely
+export function loadConfirmFlags(): ConfirmFlags {
+  try {
+    const raw = localStorage.getItem('confirmFlags');
+    if (!raw) return DEFAULT_FLAGS;
+    const parsed = JSON.parse(raw);
+    return { ...DEFAULT_FLAGS, ...parsed };
+  } catch {
+    return DEFAULT_FLAGS;
+  }
+}
+
+// 🔹 Reset all confirmations at once
+export function restoreAllConfirmations() {
+  saveConfirmFlags(DEFAULT_FLAGS);
 }

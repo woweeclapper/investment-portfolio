@@ -1,58 +1,67 @@
-Investment Dashboard
-A modular, personal finance dashboard built with React + TypeScript, designed to track crypto holdings, stock positions, dividend income, and overall portfolio performance.
+# 💼 Investment Dashboard
 
-This project emphasizes clarity, modularity, and safety nets — every action is confirmed with reusable modals, and restore buttons allow you to re‑enable confirmations locally or globally. 
+A modular personal finance dashboard built with **React + TypeScript**, designed to track crypto holdings, stock positions, dividend income, and overall portfolio performance.
 
-Core Modules
-CryptoPrices – Live crypto price feed (main + supplementary coins).
+This project emphasizes **clarity**, **modularity**, and **safety nets** — every action is confirmed via reusable modals, with restore buttons to re‑enable confirmations locally or globally.
 
-CryptoHoldings – Track your crypto positions with:
+---
 
-Buy price, current price, value, and P/L calculations.
+## 🧩 Core Modules
 
-Confirmation modal with “Don’t ask again” option.
+### 📈 CryptoPrices
+- Live feed for primary and supplementary coins
+- Debounced API calls with loading/error states
 
-Per‑module restore button.
+### 🪙 CryptoHoldings
+- Track buy price, current price, value, and P/L
+- Confirmation modal with “Don’t ask again” logic
+- Per‑module restore button
 
-StockTracker – Manage stock positions with the same confirmation logic.
+### 📊 StockTracker
+- Manage stock positions with confirm logic
+- Inline validation for amount and date
 
-DividendLogger – Log dividend income with:
+### 💸 DividendLogger
+- Log dividend income with monthly summaries
+- Integrated chart visualization
+- Persistent confirmation flags
 
-Monthly summaries.
+### 📊 PortfolioPerformance
+- Unified view of portfolio growth across crypto, stocks, and dividends
+- Memoized aggregates for performance
 
-Integrated chart visualization.
+---
 
-Persistent confirmation flags.
+## 🛠️ Utilities
 
-PortfolioPerformance – Unified view of portfolio growth across crypto, stocks, and dividends.
+- `storage.ts` — Local persistence for holdings and confirm flags  
+- `formatters.ts` — Consistent currency and date formatting  
+- `api.ts` — Fetch live crypto prices from CoinGecko  
+- `ConfirmModal.tsx` — Reusable modal with dark styling, “Don’t ask again,” and restore logic
 
-Utilities
-storage.ts – Local persistence for data and confirmation flags.
+---
 
-formatters.ts – Consistent currency and date formatting.
+## 🛡️ Safety Nets
 
-api.ts – Fetch live crypto prices from CoinGecko.
+- **Confirmation Modals** — Prevent accidental deletions  
+- **Per‑Module Restore** — Re‑enable confirmations inside each module  
+- **Global Restore** — Reset all confirmations from the dashboard header
 
-ConfirmModal.tsx – Reusable modal with dark styling, “Don’t ask again,” and restore logic.
+---
 
-Safety Nets
-Confirmation Modals – Prevent accidental deletions.
+## 🚀 Getting Started
 
-Per‑Module Restore – Re‑enable confirmations inside each module.
+### Prerequisites
+- Node.js (≥ 18)
+- npm or yarn
 
-Global Restore – Reset all confirmations at once from the dashboard header.
-
-🛠️ Getting Started
-Prerequisites
-Node.js (>= 18)
-
-npm or yarn
-
-Installation
+### Installation
+```bash
 git clone https://github.com/your-username/investment-dashboard.git
 cd investment-dashboard
 npm install
 npm start
+
 
 Project Structure
 src/
@@ -68,6 +77,3 @@ src/
  │    ├── formatters.ts
  │    └── api.ts
  └── App.tsx
-
-📜 License
-MIT License — feel free to use, modify, and share.

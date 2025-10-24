@@ -1,19 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { formatCurrency, formatDate } from '../utils/formatters';
-import { saveData, loadData, saveConfirmFlags, loadConfirmFlags } from '../utils/storage';
-import { Bar } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+  saveData,
+  loadData,
+  saveConfirmFlags,
+  loadConfirmFlags,
+} from '../utils/storage';
+import type { ConfirmFlags } from '../utils/storage';   // ✅ type-only import
+import { toNumberSafe } from '../utils/calculations';
 import ConfirmModal from './ConfirmModal';
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+import Badge from './Badge';
+import DividendChart from './DividendChart';
+import Button from './Button';
 
 type Dividend = {
   id: number;
@@ -32,7 +30,9 @@ export default function DividendLogger() {
 
   // Confirmation state with persistent flag
   const [confirmId, setConfirmId] = useState<number | null>(null);
-  const [skipConfirm, setSkipConfirm] = useState(() => loadConfirmFlags().dividends || false);
+  const [skipConfirm, setSkipConfirm] = useState<boolean>(
+    () => loadConfirmFlags().dividends
+  );
 
   // Persist dividends
   useEffect(() => {
@@ -41,16 +41,25 @@ export default function DividendLogger() {
 
   // Persist skipConfirm flag
   useEffect(() => {
-    const flags = loadConfirmFlags();
+    const flags: ConfirmFlags = loadConfirmFlags();
     saveConfirmFlags({ ...flags, dividends: skipConfirm });
   }, [skipConfirm]);
 
+  // Basic input validation
+  const amountNum = useMemo(() => toNumberSafe(amount), [amount]);
+
+  const isValid =
+    source.trim().length > 0 &&
+    Number.isFinite(amountNum) &&
+    amountNum > 0 &&
+    /^\d{4}-\d{2}-\d{2}$/.test(date);
+
   const addDividend = () => {
-    if (!source || !amount || !date) return;
+    if (!isValid) return;
     const newDividend: Dividend = {
       id: Date.now(),
-      source,
-      amount: parseFloat(amount),
+      source: source.trim(),
+      amount: amountNum,
       date,
     };
     setDividends((prev) => [...prev, newDividend]);
@@ -77,7 +86,7 @@ export default function DividendLogger() {
 
   const total = dividends.reduce((sum, d) => sum + d.amount, 0);
 
-  // Monthly breakdown (labels order by date)
+  // Monthly breakdown (labels ordered by date)
   const monthlyMap: Record<string, number> = {};
   const monthOrder: string[] = [];
   dividends
@@ -92,20 +101,13 @@ export default function DividendLogger() {
       monthlyMap[key] = (monthlyMap[key] || 0) + d.amount;
     });
 
-  const chartData = {
-    labels: monthOrder,
-    datasets: [
-      {
-        label: 'Dividends per Month',
-        data: monthOrder.map((m) => monthlyMap[m]),
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-      },
-    ],
-  };
-
   return (
     <div>
-      <h2>Dividend Logger</h2>
+      <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        Dividend Logger
+        {skipConfirm && <Badge label="Confirmations off" tone="danger" />}
+      </h2>
+
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
         <input
           type="text"
@@ -118,54 +120,63 @@ export default function DividendLogger() {
           placeholder="Amount"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
+          min="0"
+          step="0.01"
         />
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
-        <button onClick={addDividend}>Add</button>
+        <Button onClick={addDividend} disabled={!isValid}>
+          Add
+        </Button>
       </div>
 
-      <ul>
-        {dividends.map((d) => (
-          <li key={d.id} style={{ marginBottom: '0.5rem' }}>
-            {d.source} — {formatCurrency(d.amount)} on {formatDate(d.date)}
-            {' '}
-            <button onClick={() => removeDividend(d.id)}>Remove</button>
-          </li>
-        ))}
-      </ul>
+      {dividends.length === 0 ? (
+        <p style={{ color: '#9aa4ad' }}>No dividends yet. Add entries to see totals and charts.</p>
+      ) : (
+        <ul>
+          {dividends.map((d) => {
+            const pct = total > 0 ? (d.amount / total) * 100 : null;
+            return (
+              <li key={d.id} style={{ marginBottom: '0.5rem' }}>
+                {d.source} — {formatCurrency(d.amount)} on {formatDate(d.date)}
+                {pct != null && ` (${pct.toFixed(2)}% of total)`}
+                {' '}
+                <Button variant="danger" onClick={() => removeDividend(d.id)}>
+                  Remove
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <h3>Total Dividends: {formatCurrency(total)}</h3>
 
       <h3>Monthly Summary</h3>
-      <ul>
-        {monthOrder.map((m) => (
-          <li key={m}>
-            {m}: {formatCurrency(monthlyMap[m])}
-          </li>
-        ))}
-      </ul>
+      {monthOrder.length === 0 ? (
+        <p style={{ color: '#9aa4ad' }}>No monthly data yet.</p>
+      ) : (
+        <ul>
+          {monthOrder.map((m) => (
+            <li key={m}>
+              {m}: {formatCurrency(monthlyMap[m])}
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div style={{ maxWidth: '640px', marginTop: '1rem' }}>
-        <Bar data={chartData} />
+        <DividendChart dividends={dividends} />
       </div>
 
-      {/* Restore confirmations */}
-      <button
-        style={{
-          marginTop: '1rem',
-          background: '#6c757d',
-          color: 'white',
-          border: 'none',
-          padding: '0.4rem 0.8rem',
-          borderRadius: '4px',
-        }}
-        onClick={() => setSkipConfirm(false)}
-      >
-        Restore Confirmations
-      </button>
+      <div style={{ marginTop: '1rem' }}>
+        <Button variant="muted" onClick={() => setSkipConfirm(false)}>
+          Restore Confirmations
+        </Button>
+      </div>
 
       {confirmId != null && (
         <ConfirmModal

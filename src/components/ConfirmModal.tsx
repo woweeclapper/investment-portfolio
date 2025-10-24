@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Button from './Button';
 
 type ConfirmModalProps = {
   message: string;
@@ -6,11 +7,10 @@ type ConfirmModalProps = {
   onCancel: () => void;
 };
 
-// ✅ Define styles before using them
 const backdropStyle: React.CSSProperties = {
   position: 'fixed',
   inset: 0,
-  backgroundColor: 'rgba(0,0,0,0.5)', // darker overlay
+  backgroundColor: 'rgba(0,0,0,0.5)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -18,32 +18,13 @@ const backdropStyle: React.CSSProperties = {
 };
 
 const contentStyle: React.CSSProperties = {
-  backgroundColor: '#1e1e1e', // dark modal background
-  color: '#f1f1f1',           // light text
+  backgroundColor: '#1e1e1e',
+  color: '#f1f1f1',
   padding: '1rem',
   borderRadius: '8px',
   minWidth: '280px',
   maxWidth: '420px',
   boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-};
-
-const buttonBase: React.CSSProperties = {
-  padding: '0.4rem 0.8rem',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-};
-
-const confirmButton: React.CSSProperties = {
-  ...buttonBase,
-  backgroundColor: '#d9534f',
-  color: 'white',
-};
-
-const cancelButton: React.CSSProperties = {
-  ...buttonBase,
-  backgroundColor: '#6c757d',
-  color: 'white',
 };
 
 export default function ConfirmModal({ message, onConfirm, onCancel }: ConfirmModalProps) {
@@ -64,8 +45,12 @@ export default function ConfirmModal({ message, onConfirm, onCancel }: ConfirmMo
         </label>
 
         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-          <button style={confirmButton} onClick={() => onConfirm(dontAskAgain)}>Confirm</button>
-          <button style={cancelButton} onClick={onCancel}>Cancel</button>
+          <Button variant="danger" onClick={() => onConfirm(dontAskAgain)}>
+            Confirm
+          </Button>
+          <Button variant="muted" onClick={onCancel}>
+            Cancel
+          </Button>
         </div>
       </div>
     </div>

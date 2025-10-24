@@ -1,7 +1,18 @@
 import { useState, useEffect } from 'react';
 import ConfirmModal from './ConfirmModal';
+import Badge from './Badge';
+import Button from './Button';
 import { fetchStockPrice } from '../utils/api';
-import { saveData, loadData } from '../utils/storage';
+import {
+  saveData,
+  loadData,
+  saveConfirmFlags,
+  loadConfirmFlags,
+} from '../utils/storage';
+
+import type { ConfirmFlags } from '../utils/storage';
+
+import { toNumberSafe, percentChange, profitLoss } from '../utils/calculations';
 
 type Stock = {
   id: number;
@@ -32,6 +43,11 @@ export default function StockTracker() {
   const [modalMessage, setModalMessage] = useState('');
   const [modalAction, setModalAction] = useState<null | ((dontAskAgain: boolean) => void)>(null);
 
+  // Per-module skipConfirm synced with global confirm flags
+  const [skipConfirm, setSkipConfirm] = useState<boolean>(
+    () => loadConfirmFlags().stocks
+  );
+
   // Persist stocks & prefs
   useEffect(() => {
     saveData('stocks', stocks);
@@ -41,23 +57,35 @@ export default function StockTracker() {
     saveData('stockPrefs', prefs);
   }, [prefs]);
 
-  // Fetch current prices initially and every 5 minutes
+  // Persist module-level skipConfirm into shared confirm flags
   useEffect(() => {
+    const flags: ConfirmFlags = loadConfirmFlags();
+    saveConfirmFlags({ ...flags, stocks: skipConfirm });
+  }, [skipConfirm]);
+
+  // Fetch current prices initially and every 5 minutes
+  const tickers = stocks.map((s) => s.ticker).join(',');
+  useEffect(() => {
+    if (stocks.length === 0) return;
+    let canceled = false;
+
     const fetchPrices = async () => {
-      if (stocks.length === 0) return;
       const updated = await Promise.all(
         stocks.map(async (s) => {
           const price = await fetchStockPrice(s.ticker);
           return price != null ? { ...s, currentPrice: price } : s;
         })
       );
-      setStocks(updated);
+      if (!canceled) setStocks(updated);
     };
 
     fetchPrices();
     const interval = setInterval(fetchPrices, 300_000);
-    return () => clearInterval(interval);
-  }, [stocks.map((s) => s.ticker).join(',')]);
+    return () => {
+      canceled = true;
+      clearInterval(interval);
+    };
+  }, [tickers]);
 
   const startEdit = (stock: Stock) => {
     setEditingId(stock.id);
@@ -77,8 +105,8 @@ export default function StockTracker() {
               ? {
                   ...s,
                   ticker: ticker.toUpperCase(),
-                  shares: parseFloat(shares),
-                  buyPrice: parseFloat(buyPrice),
+                  shares: toNumberSafe(shares),
+                  buyPrice: toNumberSafe(buyPrice),
                 }
               : s
           )
@@ -90,8 +118,8 @@ export default function StockTracker() {
           {
             id: Date.now(),
             ticker: ticker.toUpperCase(),
-            shares: parseFloat(shares),
-            buyPrice: parseFloat(buyPrice),
+            shares: toNumberSafe(shares),
+            buyPrice: toNumberSafe(buyPrice),
           },
         ]);
       }
@@ -100,11 +128,14 @@ export default function StockTracker() {
       setBuyPrice('');
     };
 
-    if (editingId && prefs.confirmEdit) {
+    if (editingId && prefs.confirmEdit && !skipConfirm) {
       setModalMessage(`Update ${ticker.toUpperCase()} with new values?`);
       setModalAction(() => (dontAskAgain: boolean) => {
         doUpdate();
-        if (dontAskAgain) setPrefs((p) => ({ ...p, confirmEdit: false }));
+        if (dontAskAgain) {
+          setPrefs((p) => ({ ...p, confirmEdit: false }));
+          setSkipConfirm(true);
+        }
       });
       setShowModal(true);
     } else {
@@ -115,11 +146,14 @@ export default function StockTracker() {
   const removeStock = (id: number, t: string) => {
     const doRemove = () => setStocks((prev) => prev.filter((s) => s.id !== id));
 
-    if (prefs.confirmRemove) {
+    if (prefs.confirmRemove && !skipConfirm) {
       setModalMessage(`Are you sure you want to remove ${t}?`);
       setModalAction(() => (dontAskAgain: boolean) => {
         doRemove();
-        if (dontAskAgain) setPrefs((p) => ({ ...p, confirmRemove: false }));
+        if (dontAskAgain) {
+          setPrefs((p) => ({ ...p, confirmRemove: false }));
+          setSkipConfirm(true);
+        }
       });
       setShowModal(true);
     } else {
@@ -129,11 +163,15 @@ export default function StockTracker() {
 
   const restoreConfirmations = () => {
     setPrefs({ confirmRemove: true, confirmEdit: true });
+    setSkipConfirm(false);
   };
 
   return (
     <div>
-      <h2>Stock Tracker</h2>
+      <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        Stock Tracker
+        {skipConfirm && <Badge label="Confirmations off" tone="danger" />}
+      </h2>
 
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
         <input
@@ -154,9 +192,10 @@ export default function StockTracker() {
           value={buyPrice}
           onChange={(e) => setBuyPrice(e.target.value)}
         />
-        <button onClick={addOrUpdateStock}>{editingId ? 'Update' : 'Add'}</button>
+        <Button onClick={addOrUpdateStock}>{editingId ? 'Update' : 'Add'}</Button>
         {editingId && (
-          <button
+          <Button
+            variant="muted"
             onClick={() => {
               setEditingId(null);
               setTicker('');
@@ -165,7 +204,7 @@ export default function StockTracker() {
             }}
           >
             Cancel
-          </button>
+          </Button>
         )}
       </div>
 
@@ -173,7 +212,8 @@ export default function StockTracker() {
         {stocks.map((s) => {
           const costBasis = s.shares * s.buyPrice;
           const currentValue = s.currentPrice != null ? s.shares * s.currentPrice : null;
-          const profitLoss = currentValue != null ? currentValue - costBasis : null;
+          const pl = currentValue != null ? profitLoss(currentValue, costBasis) : null;
+          const pct = currentValue != null ? percentChange(currentValue, costBasis) : null;
 
           return (
             <li key={s.id} style={{ marginBottom: '0.5rem' }}>
@@ -182,12 +222,13 @@ export default function StockTracker() {
                 <>
                   {' '}| Current: ${s.currentPrice.toFixed(2)}
                   {' '}| Value: ${currentValue?.toFixed(2)}
-                  {' '}| P/L: {profitLoss != null ? profitLoss.toFixed(2) : '—'}
+                  {' '}| P/L: {pl != null ? pl.toFixed(2) : '—'}
+                  {pct != null && ` (${pct.toFixed(2)}%)`}
                 </>
               )}
               {' '}
-              <button onClick={() => startEdit(s)}>Edit</button>
-              <button onClick={() => removeStock(s.id, s.ticker)}>Remove</button>
+              <Button variant="muted" onClick={() => startEdit(s)}>Edit</Button>{' '}
+              <Button variant="danger" onClick={() => removeStock(s.id, s.ticker)}>Remove</Button>
             </li>
           );
         })}
@@ -204,9 +245,11 @@ export default function StockTracker() {
         />
       )}
 
-      <button onClick={restoreConfirmations} style={{ marginTop: '0.75rem' }}>
-        Restore Confirmations
-      </button>
+      <div style={{ marginTop: '0.75rem' }}>
+        <Button variant="muted" onClick={restoreConfirmations}>
+          Restore Confirmations
+        </Button>
+      </div>
     </div>
   );
 }
