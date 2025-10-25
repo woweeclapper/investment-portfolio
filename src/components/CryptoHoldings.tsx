@@ -21,6 +21,10 @@ type Holding = {
 };
 
 export default function CryptoHoldings() {
+
+    // Force an error for testing
+  //throw new Error("Test crash in CryptoHoldings");
+
   const [holdings, setHoldings] = useState<Holding[]>(() =>
     loadData<Holding[]>('cryptoHoldings', [])
   );

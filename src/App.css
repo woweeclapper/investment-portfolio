@@ -40,3 +40,13 @@
 .read-the-docs {
   color: #888;
 }
+
+.error-fallback {
+  border: 1px solid #e63946;
+  background: #ffe6e6;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 6px;
+  color: #b00020;
+  font-weight: 500;
+}

@@ -13,6 +13,7 @@ import {
 import type { ConfirmFlags } from '../utils/storage';
 
 import { toNumberSafe, percentChange, profitLoss } from '../utils/calculations';
+import { isValidTicker, isPositiveNumber } from '../utils/validators';
 
 type Stock = {
   id: number;
@@ -179,13 +180,17 @@ export default function StockTracker() {
           placeholder="Ticker"
           value={ticker}
           onChange={(e) => setTicker(e.target.value)}
+          className={!isValidTicker(ticker) && ticker ? "input-error" : ""}
         />
+
         <input
           type="number"
           placeholder="Shares"
           value={shares}
           onChange={(e) => setShares(e.target.value)}
+          className={!isPositiveNumber(shares) && shares ? "input-error" : ""}
         />
+
         <input
           type="number"
           placeholder="Buy Price"
