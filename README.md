@@ -5,9 +5,6 @@ A modular personal finance dashboard built with **React + TypeScript**, designed
 
 This project emphasizes **clarity**, **modularity**, and **safety nets** — every action is confirmed via reusable modals, with restore buttons to re‑enable confirmations locally or globally.
 =======
-Core Modules:
-CryptoPrices – Live crypto price feed (main + supplementary coins).
-
 
 ---
 
