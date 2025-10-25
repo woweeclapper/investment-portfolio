@@ -2,7 +2,12 @@
 
 A modular personal finance dashboard built with **React + TypeScript**, designed to track crypto holdings, stock positions, dividend income, and overall portfolio performance.
 
+<<<<<<< HEAD
 This project emphasizes **clarity**, **modularity**, and **safety nets** — every action is confirmed via reusable modals, with restore buttons to re‑enable confirmations locally or globally.
+=======
+Core Modules:
+CryptoPrices – Live crypto price feed (main + supplementary coins).
+>>>>>>> 856be8c78635514b027021c0722f4a2cc2282795
 
 ---
 
@@ -77,3 +82,9 @@ src/
  │    ├── formatters.ts
  │    └── api.ts
  └── App.tsx
+<<<<<<< HEAD
+=======
+
+📜 License
+MIT License — feel free to use, modify, and share.
+>>>>>>> 856be8c78635514b027021c0722f4a2cc2282795
