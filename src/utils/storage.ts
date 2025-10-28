@@ -1,7 +1,11 @@
 const CURRENT_VERSION = 2;
 
 // Generic safe load
-export function loadData<T>(key: string, fallback: T, version = CURRENT_VERSION): T {
+export function loadData<T>(
+  key: string,
+  fallback: T,
+  version = CURRENT_VERSION
+): T {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return fallback;

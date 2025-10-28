@@ -8,7 +8,10 @@ interface BadgeProps {
 
 export default function Badge({ label, tone = 'muted', style }: BadgeProps) {
   // background + text colors mapped by tone
-  const toneStyles: Record<'muted' | 'danger' | 'primary', { bg: string; color: string }> = {
+  const toneStyles: Record<
+    'muted' | 'danger' | 'primary',
+    { bg: string; color: string }
+  > = {
     danger: { bg: '#3a1f24', color: '#ff6b6b' },
     primary: { bg: '#1f3327', color: '#7bd389' },
     muted: { bg: '#2b2f33', color: '#b5bcc3' },

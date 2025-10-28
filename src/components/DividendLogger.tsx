@@ -6,12 +6,13 @@ import {
   saveConfirmFlags,
   loadConfirmFlags,
 } from '../utils/storage';
-import type { ConfirmFlags } from '../utils/storage';   // ✅ type-only import
+import type { ConfirmFlags } from '../utils/storage';
 import { toNumberSafe } from '../utils/calculations';
 import ConfirmModal from './ConfirmModal';
 import Badge from './Badge';
 import DividendChart from './DividendChart';
 import Button from './Button';
+import FormError from './FormError';
 
 type Dividend = {
   id: number;
@@ -28,31 +29,27 @@ export default function DividendLogger() {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState('');
 
-  // Confirmation state with persistent flag
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [skipConfirm, setSkipConfirm] = useState<boolean>(
     () => loadConfirmFlags().dividends
   );
 
-  // Persist dividends
   useEffect(() => {
     saveData('dividends', dividends);
   }, [dividends]);
 
-  // Persist skipConfirm flag
   useEffect(() => {
     const flags: ConfirmFlags = loadConfirmFlags();
     saveConfirmFlags({ ...flags, dividends: skipConfirm });
   }, [skipConfirm]);
 
-  // Basic input validation
+  // Validation
   const amountNum = useMemo(() => toNumberSafe(amount), [amount]);
+  const isValidSource = source.trim().length > 0;
+  const isValidAmount = Number.isFinite(amountNum) && amountNum > 0;
+  const isValidDate = /^\d{4}-\d{2}-\d{2}$/.test(date);
 
-  const isValid =
-    source.trim().length > 0 &&
-    Number.isFinite(amountNum) &&
-    amountNum > 0 &&
-    /^\d{4}-\d{2}-\d{2}$/.test(date);
+  const isValid = isValidSource && isValidAmount && isValidDate;
 
   const addDividend = () => {
     if (!isValid) return;
@@ -86,7 +83,6 @@ export default function DividendLogger() {
 
   const total = dividends.reduce((sum, d) => sum + d.amount, 0);
 
-  // Monthly breakdown (labels ordered by date)
   const monthlyMap: Record<string, number> = {};
   const monthOrder: string[] = [];
   dividends
@@ -108,33 +104,63 @@ export default function DividendLogger() {
         {skipConfirm && <Badge label="Confirmations off" tone="danger" />}
       </h2>
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-        <input
-          type="text"
-          placeholder="Source"
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          min="0"
-          step="0.01"
-        />
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+          marginBottom: '0.75rem',
+        }}
+      >
+        <div>
+          <input
+            type="text"
+            placeholder="Source"
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+            className={!isValidSource && source ? 'input-error' : ''}
+          />
+          {!isValidSource && source && (
+            <FormError message="Source is required." />
+          )}
+        </div>
+
+        <div>
+          <input
+            type="number"
+            placeholder="Amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className={!isValidAmount && amount ? 'input-error' : ''}
+            min="0"
+            step="0.01"
+          />
+          {!isValidAmount && amount && (
+            <FormError message="Amount must be a positive number." />
+          )}
+        </div>
+
+        <div>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className={!isValidDate && date ? 'input-error' : ''}
+          />
+          {!isValidDate && date && (
+            <FormError message="Please select a valid date." />
+          )}
+        </div>
+
         <Button onClick={addDividend} disabled={!isValid}>
           Add
         </Button>
       </div>
 
       {dividends.length === 0 ? (
-        <p style={{ color: '#9aa4ad' }}>No dividends yet. Add entries to see totals and charts.</p>
+        <p style={{ color: '#9aa4ad' }}>
+          No dividends yet. Add entries to see totals and charts.
+        </p>
       ) : (
         <ul>
           {dividends.map((d) => {
@@ -142,8 +168,7 @@ export default function DividendLogger() {
             return (
               <li key={d.id} style={{ marginBottom: '0.5rem' }}>
                 {d.source} — {formatCurrency(d.amount)} on {formatDate(d.date)}
-                {pct != null && ` (${pct.toFixed(2)}% of total)`}
-                {' '}
+                {pct != null && ` (${pct.toFixed(2)}% of total)`}{' '}
                 <Button variant="danger" onClick={() => removeDividend(d.id)}>
                   Remove
                 </Button>

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import ConfirmModal from './ConfirmModal';
 import Badge from './Badge';
 import Button from './Button';
+import FormError from './FormError';
 import { fetchStockPrice } from '../utils/api';
 import {
   saveData,
@@ -9,11 +10,11 @@ import {
   saveConfirmFlags,
   loadConfirmFlags,
 } from '../utils/storage';
-
 import type { ConfirmFlags } from '../utils/storage';
-
-import { toNumberSafe, percentChange, profitLoss } from '../utils/calculations';
+import { toNumberSafe } from '../utils/calculations';
 import { isValidTicker, isPositiveNumber } from '../utils/validators';
+import { debounce } from '../utils/debounce';
+import { StockRow } from './StockRow';
 
 type Stock = {
   id: number;
@@ -29,7 +30,9 @@ type Prefs = {
 };
 
 export default function StockTracker() {
-  const [stocks, setStocks] = useState<Stock[]>(() => loadData<Stock[]>('stocks', []));
+  const [stocks, setStocks] = useState<Stock[]>(() =>
+    loadData<Stock[]>('stocks', [])
+  );
   const [prefs, setPrefs] = useState<Prefs>(() =>
     loadData<Prefs>('stockPrefs', { confirmRemove: true, confirmEdit: true })
   );
@@ -42,7 +45,9 @@ export default function StockTracker() {
   // Modal
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
-  const [modalAction, setModalAction] = useState<null | ((dontAskAgain: boolean) => void)>(null);
+  const [modalAction, setModalAction] = useState<
+    null | ((dontAskAgain: boolean) => void)
+  >(null);
 
   // Per-module skipConfirm synced with global confirm flags
   const [skipConfirm, setSkipConfirm] = useState<boolean>(
@@ -70,7 +75,7 @@ export default function StockTracker() {
     if (stocks.length === 0) return;
     let canceled = false;
 
-    const fetchPrices = async () => {
+    const loadPrices = async () => {
       const updated = await Promise.all(
         stocks.map(async (s) => {
           const price = await fetchStockPrice(s.ticker);
@@ -80,14 +85,17 @@ export default function StockTracker() {
       if (!canceled) setStocks(updated);
     };
 
-    fetchPrices();
-    const interval = setInterval(fetchPrices, 300_000);
+    const debouncedFetch = debounce(loadPrices, 500);
+    debouncedFetch(); // run immediately once
+    const interval = setInterval(debouncedFetch, 300_000);
+
     return () => {
       canceled = true;
       clearInterval(interval);
     };
   }, [tickers]);
 
+  // Editing
   const startEdit = (stock: Stock) => {
     setEditingId(stock.id);
     setTicker(stock.ticker);
@@ -95,8 +103,13 @@ export default function StockTracker() {
     setBuyPrice(stock.buyPrice.toString());
   };
 
+  const isValidForm =
+    isValidTicker(ticker) &&
+    isPositiveNumber(shares) &&
+    isPositiveNumber(buyPrice);
+
   const addOrUpdateStock = () => {
-    if (!ticker || !shares || !buyPrice) return;
+    if (!isValidForm) return;
 
     const doUpdate = () => {
       if (editingId) {
@@ -167,6 +180,14 @@ export default function StockTracker() {
     setSkipConfirm(false);
   };
 
+  // Memoized portfolio total
+  const totalValue = useMemo(() => {
+    return stocks.reduce((sum, s) => {
+      const price = s.currentPrice ?? 0;
+      return sum + s.shares * price;
+    }, 0);
+  }, [stocks]);
+
   return (
     <div>
       <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -174,70 +195,90 @@ export default function StockTracker() {
         {skipConfirm && <Badge label="Confirmations off" tone="danger" />}
       </h2>
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-        <input
-          type="text"
-          placeholder="Ticker"
-          value={ticker}
-          onChange={(e) => setTicker(e.target.value)}
-          className={!isValidTicker(ticker) && ticker ? "input-error" : ""}
-        />
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+          marginBottom: '0.75rem',
+        }}
+      >
+        <div>
+          <input
+            type="text"
+            placeholder="Ticker"
+            value={ticker}
+            onChange={(e) => setTicker(e.target.value)}
+            className={!isValidTicker(ticker) && ticker ? 'input-error' : ''}
+          />
+          {!isValidTicker(ticker) && ticker && (
+            <FormError message="Ticker must be 1–5 letters." />
+          )}
+        </div>
 
-        <input
-          type="number"
-          placeholder="Shares"
-          value={shares}
-          onChange={(e) => setShares(e.target.value)}
-          className={!isPositiveNumber(shares) && shares ? "input-error" : ""}
-        />
+        <div>
+          <input
+            type="number"
+            placeholder="Shares"
+            value={shares}
+            onChange={(e) => setShares(e.target.value)}
+            className={!isPositiveNumber(shares) && shares ? 'input-error' : ''}
+          />
+          {!isPositiveNumber(shares) && shares && (
+            <FormError message="Shares must be a positive number." />
+          )}
+        </div>
 
-        <input
-          type="number"
-          placeholder="Buy Price"
-          value={buyPrice}
-          onChange={(e) => setBuyPrice(e.target.value)}
-        />
-        <Button onClick={addOrUpdateStock}>{editingId ? 'Update' : 'Add'}</Button>
-        {editingId && (
-          <Button
-            variant="muted"
-            onClick={() => {
-              setEditingId(null);
-              setTicker('');
-              setShares('');
-              setBuyPrice('');
-            }}
-          >
-            Cancel
+        <div>
+          <input
+            type="number"
+            placeholder="Buy Price"
+            value={buyPrice}
+            onChange={(e) => setBuyPrice(e.target.value)}
+            className={
+              buyPrice && !isPositiveNumber(buyPrice) ? 'input-error' : ''
+            }
+          />
+          {buyPrice && !isPositiveNumber(buyPrice) && (
+            <FormError message="Buy price must be positive." />
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Button onClick={addOrUpdateStock} disabled={!isValidForm}>
+            {editingId ? 'Update' : 'Add'}
           </Button>
-        )}
+          {editingId && (
+            <Button
+              variant="muted"
+              onClick={() => {
+                setEditingId(null);
+                setTicker('');
+                setShares('');
+                setBuyPrice('');
+              }}
+            >
+              Cancel
+            </Button>
+          )}
+        </div>
       </div>
 
       <ul>
-        {stocks.map((s) => {
-          const costBasis = s.shares * s.buyPrice;
-          const currentValue = s.currentPrice != null ? s.shares * s.currentPrice : null;
-          const pl = currentValue != null ? profitLoss(currentValue, costBasis) : null;
-          const pct = currentValue != null ? percentChange(currentValue, costBasis) : null;
-
-          return (
-            <li key={s.id} style={{ marginBottom: '0.5rem' }}>
-              {s.ticker} — {s.shares} shares @ ${s.buyPrice.toFixed(2)}
-              {s.currentPrice != null && (
-                <>
-                  {' '}| Current: ${s.currentPrice.toFixed(2)}
-                  {' '}| Value: ${currentValue?.toFixed(2)}
-                  {' '}| P/L: {pl != null ? pl.toFixed(2) : '—'}
-                  {pct != null && ` (${pct.toFixed(2)}%)`}
-                </>
-              )}
-              {' '}
-              <Button variant="muted" onClick={() => startEdit(s)}>Edit</Button>{' '}
-              <Button variant="danger" onClick={() => removeStock(s.id, s.ticker)}>Remove</Button>
-            </li>
-          );
-        })}
+        {stocks.map((s) => (
+          <StockRow
+            key={s.id}
+            stock={s}
+            onEdit={startEdit}
+            onRemove={removeStock}
+          />
+        ))}
       </ul>
+
+      <div style={{ marginTop: '0.75rem' }}>
+        <strong>Total Value:</strong> $
+        {totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+      </div>
 
       {showModal && modalAction && (
         <ConfirmModal

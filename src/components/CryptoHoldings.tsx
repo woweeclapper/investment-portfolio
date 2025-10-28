@@ -1,30 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import ConfirmModal from './ConfirmModal';
 import Badge from './Badge';
 import Button from './Button';
+import FormError from './FormError';
 import {
   saveData,
   loadData,
   saveConfirmFlags,
   loadConfirmFlags,
 } from '../utils/storage';
-import type { ConfirmFlags } from '../utils/storage';   // ✅ type-only import
+import type { ConfirmFlags } from '../utils/storage';
 import { fetchCryptoPrices } from '../utils/api';
-import { profitLoss, percentChange } from '../utils/calculations';
+import { HoldingRow } from './HoldingRow';
+import { debounce } from '../utils/debounce';
+import { isPositiveNumber } from '../utils/validators';
 
 type Holding = {
   id: number;
-  coin: string; // e.g. 'bitcoin', 'ethereum'
+  coin: string;
   amount: number;
   buyPrice: number;
   currentPrice?: number;
 };
 
 export default function CryptoHoldings() {
-
-    // Force an error for testing
-  //throw new Error("Test crash in CryptoHoldings");
-
   const [holdings, setHoldings] = useState<Holding[]>(() =>
     loadData<Holding[]>('cryptoHoldings', [])
   );
@@ -32,6 +31,9 @@ export default function CryptoHoldings() {
   const [coin, setCoin] = useState('bitcoin');
   const [amount, setAmount] = useState('');
   const [buyPrice, setBuyPrice] = useState('');
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Confirmation modal state
   const [confirmId, setConfirmId] = useState<number | null>(null);
@@ -50,28 +52,37 @@ export default function CryptoHoldings() {
     saveData('cryptoHoldings', holdings);
   }, [holdings]);
 
-  // Fetch live prices and update holdings
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      const data = await fetchCryptoPrices();
-      if (cancelled) return;
-      setPrices(data);
+  // Debounced fetch for live prices
+  const debouncedLoad = useMemo(
+    () =>
+      debounce(async () => {
+        try {
+          setLoading(true);
+          setError(null);
+          const data = await fetchCryptoPrices();
+          setPrices(data);
+          setHoldings((prev) =>
+            prev.map((h) => ({
+              ...h,
+              currentPrice: data[h.coin]?.usd ?? h.currentPrice,
+            }))
+          );
+        } catch (err) {
+          console.error('Failed to fetch crypto prices', err);
+          setError('Failed to load crypto prices. Please try again.');
+        } finally {
+          setLoading(false);
+        }
+      }, 500),
+    []
+  );
 
-      setHoldings((prev) =>
-        prev.map((h) => ({
-          ...h,
-          currentPrice: data[h.coin]?.usd ?? h.currentPrice,
-        }))
-      );
-    };
-    load();
-    const interval = setInterval(load, 60_000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
+  // Initial + interval fetch
+  useEffect(() => {
+    debouncedLoad();
+    const interval = setInterval(debouncedLoad, 60_000);
+    return () => clearInterval(interval);
+  }, [debouncedLoad]);
 
   const addHolding = () => {
     const amt = parseFloat(amount);
@@ -107,10 +118,12 @@ export default function CryptoHoldings() {
     }
   };
 
-  const totalValue = holdings.reduce((sum, h) => {
-    const p = h.currentPrice ?? prices[h.coin]?.usd ?? 0;
-    return sum + h.amount * p;
-  }, 0);
+  const totalValue = useMemo(() => {
+    return holdings.reduce((sum, h) => {
+      const p = h.currentPrice ?? prices[h.coin]?.usd ?? 0;
+      return sum + h.amount * p;
+    }, 0);
+  }, [holdings, prices]);
 
   return (
     <div>
@@ -119,77 +132,86 @@ export default function CryptoHoldings() {
         {skipConfirm && <Badge label="Confirmations off" tone="danger" />}
       </h2>
 
-      <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem' }}>
-        <select value={coin} onChange={(e) => setCoin(e.target.value)}>
-          <option value="bitcoin">BTC</option>
-          <option value="ethereum">ETH</option>
-          <option value="solana">SOL</option>
-          <option value="ripple">XRP</option>
-          <option value="dogecoin">DOGE</option>
-          <option value="sui">SUI</option>
-          <option value="binancecoin">BNB</option>
-        </select>
+      <div
+        style={{
+          marginBottom: '1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+        }}
+      >
+        <div>
+          <select value={coin} onChange={(e) => setCoin(e.target.value)}>
+            <option value="bitcoin">BTC</option>
+            <option value="ethereum">ETH</option>
+            <option value="solana">SOL</option>
+            <option value="ripple">XRP</option>
+            <option value="dogecoin">DOGE</option>
+            <option value="sui">SUI</option>
+            <option value="binancecoin">BNB</option>
+          </select>
+        </div>
 
-        <input
-          type="number"
-          placeholder="Amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          min="0"
-          step="any"
-        />
+        <div>
+          <input
+            type="number"
+            placeholder="Amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className={!isPositiveNumber(amount) && amount ? 'input-error' : ''}
+            min="0"
+            step="any"
+          />
+          {!isPositiveNumber(amount) && amount && (
+            <FormError message="Amount must be a positive number." />
+          )}
+        </div>
 
-        <input
-          type="number"
-          placeholder="Buy Price (optional)"
-          value={buyPrice}
-          onChange={(e) => setBuyPrice(e.target.value)}
-          min="0"
-          step="any"
-        />
+        <div>
+          <input
+            type="number"
+            placeholder="Buy Price (optional)"
+            value={buyPrice}
+            onChange={(e) => setBuyPrice(e.target.value)}
+            className={
+              buyPrice && !isPositiveNumber(buyPrice) ? 'input-error' : ''
+            }
+            min="0"
+            step="any"
+          />
+          {buyPrice && !isPositiveNumber(buyPrice) && (
+            <FormError message="Buy price must be positive." />
+          )}
+        </div>
 
         <Button onClick={addHolding} disabled={!amount}>
           Add
         </Button>
       </div>
 
-      {holdings.length === 0 ? (
-        <p style={{ color: '#9aa4ad' }}>No holdings yet. Add your first crypto position above.</p>
+      {loading && <p style={{ color: '#9aa4ad' }}>Loading latest prices…</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {holdings.length === 0 && !loading && !error ? (
+        <p style={{ color: '#9aa4ad' }}>
+          No holdings yet. Add your first crypto position above.
+        </p>
       ) : (
         <ul>
-          {holdings.map((h) => {
-            const price = prices[h.coin]?.usd ?? h.currentPrice ?? null;
-            const value = price ? h.amount * price : null;
-            const pl = value != null ? profitLoss(value, h.buyPrice * h.amount) : null;
-            const pct = value != null ? percentChange(value, h.buyPrice * h.amount) : null;
-
-            return (
-              <li key={h.id} style={{ marginBottom: '0.5rem' }}>
-                {h.coin.toUpperCase()} — {h.amount} @ ${h.buyPrice.toFixed(2)}
-                {price && (
-                  <>
-                    {' '}| Current: ${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                    {' '}| Value: ${value?.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                    {' '}| P/L: {pl != null ? pl.toFixed(2) : '—'}
-                    {pct != null && ` (${pct.toFixed(2)}%)`}
-                  </>
-                )}
-                <Button
-                  variant="danger"
-                  onClick={() => removeHolding(h.id)}
-                  style={{ marginLeft: 8 }}
-                >
-                  Remove
-                </Button>
-              </li>
-            );
-          })}
+          {holdings.map((h) => (
+            <HoldingRow
+              key={h.id}
+              holding={h}
+              price={prices[h.coin]?.usd ?? h.currentPrice ?? null}
+              onRemove={removeHolding}
+            />
+          ))}
         </ul>
       )}
 
       <div style={{ marginTop: 12 }}>
-        <strong>Total Value:</strong>{' '}
-        ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+        <strong>Total Value:</strong> $
+        {totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
       </div>
 
       <div style={{ marginTop: '1rem' }}>

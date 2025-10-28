@@ -26,8 +26,20 @@ export const SUPPORTED_COINS = [...COINS_MAIN, ...COINS_SUPP] as const;
 
 // 🔹 Optional: chart palette (ties directly to your chartColors.ts)
 export const CHART_COLORS = {
-  stocks: { border: 'rgba(54, 162, 235, 1)', background: 'rgba(54, 162, 235, 0.2)' },
-  crypto: { border: 'rgba(153, 102, 255, 1)', background: 'rgba(153, 102, 255, 0.2)' },
-  dividends: { border: 'rgba(75, 192, 192, 1)', background: 'rgba(75, 192, 192, 0.2)' },
-  total: { border: 'rgba(255, 159, 64, 1)', background: 'rgba(255, 159, 64, 0.2)' },
+  stocks: {
+    border: 'rgba(54, 162, 235, 1)',
+    background: 'rgba(54, 162, 235, 0.2)',
+  },
+  crypto: {
+    border: 'rgba(153, 102, 255, 1)',
+    background: 'rgba(153, 102, 255, 0.2)',
+  },
+  dividends: {
+    border: 'rgba(75, 192, 192, 1)',
+    background: 'rgba(75, 192, 192, 0.2)',
+  },
+  total: {
+    border: 'rgba(255, 159, 64, 1)',
+    background: 'rgba(255, 159, 64, 0.2)',
+  },
 } as const;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { saveData, loadData } from '../utils/storage';
 import { Line } from 'react-chartjs-2';
 import {
@@ -15,7 +15,15 @@ import Button from './Button';
 import { chartColors } from '../utils/chartColors';
 import { baseChartOptions } from '../utils/chartOptions';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 type Stock = {
   id: number;
@@ -75,18 +83,24 @@ export default function PortfolioPerformance() {
     setCryptoHoldings(loadData<Holding[]>('cryptoHoldings', []));
   }, []);
 
-  // Helper: take a daily snapshot
-  const takeSnapshot = () => {
-    const stockValue = stocks.reduce(
-      (sum, s) => sum + (s.currentPrice != null ? s.currentPrice * s.shares : 0),
-      0
-    );
-    const totalDividends = dividends.reduce((sum, d) => sum + d.amount, 0);
-    const cryptoValue = cryptoHoldings.reduce(
+  // 🔹 Memoize current aggregate values used in snapshots
+  const stockValue = useMemo(() => {
+    return stocks.reduce((sum, s) => sum + (s.currentPrice ?? 0) * s.shares, 0);
+  }, [stocks]);
+
+  const cryptoValue = useMemo(() => {
+    return cryptoHoldings.reduce(
       (sum, h) => sum + (h.currentPrice ?? 0) * h.amount,
       0
     );
+  }, [cryptoHoldings]);
 
+  const totalDividends = useMemo(() => {
+    return dividends.reduce((sum, d) => sum + d.amount, 0);
+  }, [dividends]);
+
+  // Helper: take a daily snapshot (uses memoized aggregates)
+  const takeSnapshot = () => {
     const today = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -103,7 +117,11 @@ export default function PortfolioPerformance() {
 
   // Take initial snapshot
   useEffect(() => {
-    if (stocks.length > 0 || dividends.length > 0 || cryptoHoldings.length > 0) {
+    if (
+      stocks.length > 0 ||
+      dividends.length > 0 ||
+      cryptoHoldings.length > 0
+    ) {
       takeSnapshot();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -113,7 +131,8 @@ export default function PortfolioPerformance() {
   useEffect(() => {
     const now = new Date();
     const msUntilMidnight =
-      new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime();
+      new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() -
+      now.getTime();
 
     let interval: ReturnType<typeof setInterval>;
     const timeout: ReturnType<typeof setTimeout> = setTimeout(() => {
@@ -128,58 +147,65 @@ export default function PortfolioPerformance() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history, stocks, dividends, cryptoHoldings]);
 
-  // Monthly dividend totals
-  const monthlyMap: Record<string, number> = {};
-  const monthOrder: string[] = [];
-  dividends
-    .slice()
-    .sort((a, b) => +new Date(a.date) - +new Date(b.date))
-    .forEach((d) => {
-      const key = new Date(d.date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-      });
-      if (!(key in monthlyMap)) monthOrder.push(key);
-      monthlyMap[key] = (monthlyMap[key] || 0) + d.amount;
-    });
+  // 🔹 Memoize monthly dividend totals
+  const { monthlyMap, monthOrder } = useMemo(() => {
+    const map: Record<string, number> = {};
+    const order: string[] = [];
 
-  // Chart datasets
-  const chartData = {
-    labels: showCumulative ? history.map((h) => h.date) : monthOrder,
-    datasets: [
-      {
-        label: 'Stock Value',
-        data: showCumulative ? history.map((h) => h.stockValue) : [],
-        borderColor: chartColors.stocks.border,
-        backgroundColor: chartColors.stocks.background,
-        hidden: !showCumulative,
-      },
-      {
-        label: 'Crypto Value',
-        data: showCumulative ? history.map((h) => h.cryptoValue) : [],
-        borderColor: chartColors.crypto.border,
-        backgroundColor: chartColors.crypto.background,
-        hidden: !showCumulative,
-      },
-      {
-        label: showCumulative ? 'Cumulative Dividends' : 'Monthly Dividends',
-        data: showCumulative
-          ? history.map((h) => h.dividends)
-          : monthOrder.map((m) => monthlyMap[m]),
-        borderColor: chartColors.dividends.border,
-        backgroundColor: chartColors.dividends.background,
-      },
-      {
-        label: 'Total Portfolio (Stocks + Crypto + Dividends)',
-        data: showCumulative
-          ? history.map((h) => h.stockValue + h.cryptoValue + h.dividends)
-          : [],
-        borderColor: chartColors.total.border,
-        backgroundColor: chartColors.total.background,
-        hidden: !showCumulative,
-      },
-    ],
-  };
+    dividends
+      .slice()
+      .sort((a, b) => +new Date(a.date) - +new Date(b.date))
+      .forEach((d) => {
+        const key = new Date(d.date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+        });
+        if (!(key in map)) order.push(key);
+        map[key] = (map[key] || 0) + d.amount;
+      });
+
+    return { monthlyMap: map, monthOrder: order };
+  }, [dividends]);
+
+  // 🔹 Memoize chart datasets
+  const chartData = useMemo(() => {
+    return {
+      labels: showCumulative ? history.map((h) => h.date) : monthOrder,
+      datasets: [
+        {
+          label: 'Stock Value',
+          data: showCumulative ? history.map((h) => h.stockValue) : [],
+          borderColor: chartColors.stocks.border,
+          backgroundColor: chartColors.stocks.background,
+          hidden: !showCumulative,
+        },
+        {
+          label: 'Crypto Value',
+          data: showCumulative ? history.map((h) => h.cryptoValue) : [],
+          borderColor: chartColors.crypto.border,
+          backgroundColor: chartColors.crypto.background,
+          hidden: !showCumulative,
+        },
+        {
+          label: showCumulative ? 'Cumulative Dividends' : 'Monthly Dividends',
+          data: showCumulative
+            ? history.map((h) => h.dividends)
+            : monthOrder.map((m) => monthlyMap[m]),
+          borderColor: chartColors.dividends.border,
+          backgroundColor: chartColors.dividends.background,
+        },
+        {
+          label: 'Total Portfolio (Stocks + Crypto + Dividends)',
+          data: showCumulative
+            ? history.map((h) => h.stockValue + h.cryptoValue + h.dividends)
+            : [],
+          borderColor: chartColors.total.border,
+          backgroundColor: chartColors.total.background,
+          hidden: !showCumulative,
+        },
+      ],
+    };
+  }, [showCumulative, history, monthOrder, monthlyMap]);
 
   const options = {
     ...baseChartOptions,
@@ -194,61 +220,66 @@ export default function PortfolioPerformance() {
     },
   };
 
-  
+  // 🔹 Memoize latest snapshot summary values
+  const latestSummary = useMemo(() => {
+    if (history.length === 0) return null;
+    const latest = history[history.length - 1];
+    const total = latest.stockValue + latest.cryptoValue + latest.dividends;
+
+    const pct = (val: number) =>
+      total > 0 ? ((val / total) * 100).toFixed(1) + '%' : '0%';
+
+    return { latest, total, pct };
+  }, [history]);
+
   return (
     <div>
       <h2>Portfolio Performance</h2>
 
-      {/* 🔹 Latest snapshot summary */}
-{/* 🔹 Latest snapshot summary with percentages */}
-{history.length > 0 && (
-  <div
-    style={{
-      display: 'flex',
-      gap: '1.5rem',
-      marginBottom: '1rem',
-      padding: '0.75rem 1rem',
-      background: '#2c2c3a',        // dark card background for semi-dark dashboard
-      color: '#f1f1f1',
-      borderRadius: '8px',
-      fontSize: '0.95rem',
-      boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
-    }}
-  >
-    {(() => {
-      const latest = history[history.length - 1];
-      const total = latest.stockValue + latest.cryptoValue + latest.dividends;
-
-      const pct = (val: number) =>
-        total > 0 ? ((val / total) * 100).toFixed(1) + '%' : '0%';
-
-      return (
-        <>
+      {/* 🔹 Latest snapshot summary with percentages */}
+      {latestSummary && (
+        <div
+          style={{
+            display: 'flex',
+            gap: '1.5rem',
+            marginBottom: '1rem',
+            padding: '0.75rem 1rem',
+            background: '#2c2c3a',
+            color: '#f1f1f1',
+            borderRadius: '8px',
+            fontSize: '0.95rem',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+          }}
+        >
           <div style={{ color: chartColors.stocks.border }}>
-            <strong>Stocks:</strong> ${latest.stockValue.toFixed(2)} ({pct(latest.stockValue)})
+            <strong>Stocks:</strong> $
+            {latestSummary.latest.stockValue.toFixed(2)} (
+            {latestSummary.pct(latestSummary.latest.stockValue)})
           </div>
           <div style={{ color: chartColors.crypto.border }}>
-            <strong>Crypto:</strong> ${latest.cryptoValue.toFixed(2)} ({pct(latest.cryptoValue)})
+            <strong>Crypto:</strong> $
+            {latestSummary.latest.cryptoValue.toFixed(2)} (
+            {latestSummary.pct(latestSummary.latest.cryptoValue)})
           </div>
           <div style={{ color: chartColors.dividends.border }}>
-            <strong>Dividends:</strong> ${latest.dividends.toFixed(2)} ({pct(latest.dividends)})
+            <strong>Dividends:</strong> $
+            {latestSummary.latest.dividends.toFixed(2)} (
+            {latestSummary.pct(latestSummary.latest.dividends)})
           </div>
           <div style={{ color: chartColors.total.border }}>
-            <strong>Total:</strong> ${total.toFixed(2)} (100%)
+            <strong>Total:</strong> ${latestSummary.total.toFixed(2)} (100%)
           </div>
-        </>
-      );
-    })()}
-  </div>
-)}
-
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
         <Button
           variant="muted"
           onClick={() => setShowCumulative((prev) => !prev)}
         >
-          {showCumulative ? 'Switch to Monthly View' : 'Switch to Cumulative View'}
+          {showCumulative
+            ? 'Switch to Monthly View'
+            : 'Switch to Cumulative View'}
         </Button>
 
         <Button variant="primary" onClick={takeSnapshot}>
@@ -260,4 +291,3 @@ export default function PortfolioPerformance() {
     </div>
   );
 }
-

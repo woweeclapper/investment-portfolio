@@ -14,15 +14,25 @@ export async function fetchStockPrice(ticker: string): Promise<number | null> {
   }
 }
 
-// Crypto (on hold, but utility ready)
-export async function fetchCryptoPrices(): Promise<{ [key: string]: { usd: number } }> {
+// Crypto
+export async function fetchCryptoPrices(
+  ids: string[] = [
+    'bitcoin',
+    'ethereum',
+    'solana',
+    'ripple',
+    'dogecoin',
+    'sui',
+    'binancecoin',
+  ]
+): Promise<{ [key: string]: { usd: number } }> {
   try {
+    const query = ids.join(',');
     const res = await axios.get(
-      'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,ripple,dogecoin,sui,binancecoin&vs_currencies=usd'
+      `https://api.coingecko.com/api/v3/simple/price?ids=${query}&vs_currencies=usd`
     );
     return res.data;
   } catch {
     return {};
   }
 }
-

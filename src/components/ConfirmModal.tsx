@@ -27,7 +27,11 @@ const contentStyle: React.CSSProperties = {
   boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
 };
 
-export default function ConfirmModal({ message, onConfirm, onCancel }: ConfirmModalProps) {
+export default function ConfirmModal({
+  message,
+  onConfirm,
+  onCancel,
+}: ConfirmModalProps) {
   const [dontAskAgain, setDontAskAgain] = useState(false);
 
   return (
@@ -35,7 +39,14 @@ export default function ConfirmModal({ message, onConfirm, onCancel }: ConfirmMo
       <div style={contentStyle}>
         <p style={{ marginBottom: '0.75rem' }}>{message}</p>
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            marginBottom: '1rem',
+          }}
+        >
           <input
             type="checkbox"
             checked={dontAskAgain}
@@ -44,7 +55,9 @@ export default function ConfirmModal({ message, onConfirm, onCancel }: ConfirmMo
           Don’t ask me again for this action
         </label>
 
-        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+        <div
+          style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}
+        >
           <Button variant="danger" onClick={() => onConfirm(dontAskAgain)}>
             Confirm
           </Button>

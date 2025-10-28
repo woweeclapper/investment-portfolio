@@ -1,4 +1,3 @@
-
 export const isValidTicker = (value: string) =>
   /^[A-Za-z]{1,5}$/.test(value.trim());
 

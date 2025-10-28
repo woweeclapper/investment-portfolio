@@ -16,7 +16,11 @@ export function percentChange(current: number, previous: number): number {
 }
 
 // Compound Annual Growth Rate (CAGR)
-export function cagr(finalValue: number, initialValue: number, years: number): number {
+export function cagr(
+  finalValue: number,
+  initialValue: number,
+  years: number
+): number {
   if (initialValue <= 0 || years <= 0) return 0;
   return Math.pow(finalValue / initialValue, 1 / years) - 1;
 }
@@ -27,13 +31,20 @@ export function sum(values: number[]): number {
 }
 
 // 🔹 Optional: Dividend yield (annual dividends / current price)
-export function dividendYield(annualDividends: number, currentPrice: number): number {
+export function dividendYield(
+  annualDividends: number,
+  currentPrice: number
+): number {
   if (currentPrice <= 0) return 0;
   return (annualDividends / currentPrice) * 100;
 }
 
 // 🔹 Optional: Total return ((current + dividends - invested) / invested)
-export function totalReturn(invested: number, currentValue: number, dividends: number): number {
+export function totalReturn(
+  invested: number,
+  currentValue: number,
+  dividends: number
+): number {
   if (invested <= 0) return 0;
   return ((currentValue + dividends - invested) / invested) * 100;
 }

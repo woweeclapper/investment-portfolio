@@ -12,7 +12,15 @@ import {
 import { chartColors } from '../utils/chartColors';
 import { baseChartOptions } from '../utils/chartOptions';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 type Dividend = {
   id: number;
@@ -21,7 +29,11 @@ type Dividend = {
   date: string;
 };
 
-export default function DividendChart({ dividends }: { dividends: Dividend[] }) {
+export default function DividendChart({
+  dividends,
+}: {
+  dividends: Dividend[];
+}) {
   const monthlyMap: Record<string, number> = {};
   const monthOrder: string[] = [];
 
