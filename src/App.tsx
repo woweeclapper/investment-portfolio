@@ -16,34 +16,67 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Investment Dashboard</h1>
+      {/* ✅ Skip link for keyboard users */}
+      <a href="#dashboard-title" className="skip-link">
+        Skip to main content
+      </a>
 
-      {/* Global restore button */}
-      <div style={{ marginBottom: '1rem' }}>
-        <Button variant="muted" onClick={restoreAll}>
-          Restore All Confirmations
-        </Button>
-      </div>
+      <main>
+        <h1 id="dashboard-title">Investment Dashboard</h1>
 
-      <ErrorBoundary>
-        <CryptoPrices />
-      </ErrorBoundary>
+        {/* Global restore button */}
+        <div style={{ marginBottom: '1rem' }}>
+          <Button variant="muted" onClick={restoreAll}>
+            Restore All Confirmations
+          </Button>
+        </div>
 
-      <ErrorBoundary>
-        <CryptoHoldings />
-      </ErrorBoundary>
+        {/* ✅ Each module wrapped in ErrorBoundary */}
+        <ErrorBoundary>
+          <section aria-labelledby="crypto-prices-title">
+            <h2 id="crypto-prices-title" className="visually-hidden">
+              Crypto Prices
+            </h2>
+            <CryptoPrices />
+          </section>
+        </ErrorBoundary>
 
-      <ErrorBoundary>
-        <StockTracker />
-      </ErrorBoundary>
+        <ErrorBoundary>
+          <section aria-labelledby="crypto-holdings-title">
+            <h2 id="crypto-holdings-title" className="visually-hidden">
+              Crypto Holdings
+            </h2>
+            <CryptoHoldings />
+          </section>
+        </ErrorBoundary>
 
-      <ErrorBoundary>
-        <DividendLogger />
-      </ErrorBoundary>
+        <ErrorBoundary>
+          <section aria-labelledby="stock-tracker-title">
+            <h2 id="stock-tracker-title" className="visually-hidden">
+              Stock Tracker
+            </h2>
+            <StockTracker />
+          </section>
+        </ErrorBoundary>
 
-      <ErrorBoundary>
-        <PortfolioPerformance />
-      </ErrorBoundary>
+        <ErrorBoundary>
+          <section aria-labelledby="dividend-logger-title">
+            <h2 id="dividend-logger-title" className="visually-hidden">
+              Dividend Logger
+            </h2>
+            <DividendLogger />
+          </section>
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          <section aria-labelledby="portfolio-performance-title">
+            <h2 id="portfolio-performance-title" className="visually-hidden">
+              Portfolio Performance
+            </h2>
+            <PortfolioPerformance />
+          </section>
+        </ErrorBoundary>
+      </main>
     </div>
   );
 }

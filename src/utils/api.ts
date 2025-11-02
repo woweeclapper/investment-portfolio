@@ -1,13 +1,21 @@
 import axios from 'axios';
 
-const FINNHUB_KEY = 'd3pfn4pr01qq6ml8jv3gd3pfn4pr01qq6ml8jv40';
+// ✅ Use environment variables instead of hardcoding
+const FINNHUB_KEY = import.meta.env.VITE_FINNHUB_KEY;
+const FINNHUB_URL =
+  import.meta.env.VITE_FINNHUB_URL || 'https://finnhub.io/api/v1';
+const COINGECKO_URL =
+  import.meta.env.VITE_COINGECKO_URL || 'https://api.coingecko.com/api/v3';
 
 // Stocks
 export async function fetchStockPrice(ticker: string): Promise<number | null> {
   try {
-    const res = await axios.get(
-      `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_KEY}`
-    );
+    const res = await axios.get(`${FINNHUB_URL}/quote`, {
+      params: {
+        symbol: ticker,
+        token: FINNHUB_KEY,
+      },
+    });
     return res.data?.c ?? null;
   } catch {
     return null;
@@ -28,9 +36,12 @@ export async function fetchCryptoPrices(
 ): Promise<{ [key: string]: { usd: number } }> {
   try {
     const query = ids.join(',');
-    const res = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${query}&vs_currencies=usd`
-    );
+    const res = await axios.get(`${COINGECKO_URL}/simple/price`, {
+      params: {
+        ids: query,
+        vs_currencies: 'usd',
+      },
+    });
     return res.data;
   } catch {
     return {};

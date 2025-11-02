@@ -8,37 +8,44 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   style?: React.CSSProperties;
 }
 
-export default function Button({
-  variant = 'primary',
-  style,
-  children,
-  ...props
-}: ButtonProps) {
-  const base: React.CSSProperties = {
-    border: 'none',
-    padding: '0.45rem 0.9rem',
-    borderRadius: 6,
-    color: '#fff',
-    cursor: 'pointer',
-    fontSize: 14,
-    lineHeight: '20px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ variant = 'primary', style, children, ...props }, ref) => {
+    const base: React.CSSProperties = {
+      border: 'none',
+      padding: '0.45rem 0.9rem',
+      borderRadius: 6,
+      color: '#fff',
+      cursor: 'pointer',
+      fontSize: 14,
+      lineHeight: '20px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'background 0.2s ease, box-shadow 0.2s ease',
+    };
 
-  const bg =
-    variant === 'danger'
-      ? '#dc3545'
-      : variant === 'muted'
-        ? '#6c757d'
-        : '#3b82f6';
-  const border =
-    variant === 'muted' ? '1px solid rgba(255,255,255,0.06)' : 'none';
+    const variants: Record<Variant, React.CSSProperties> = {
+      primary: { background: '#3b82f6' },
+      danger: { background: '#dc3545' },
+      muted: {
+        background: '#6c757d',
+        border: '1px solid rgba(255,255,255,0.06)',
+      },
+    };
 
-  return (
-    <button {...props} style={{ ...base, background: bg, border, ...style }}>
-      {children}
-    </button>
-  );
-}
+    return (
+      <button
+        ref={ref}
+        {...props}
+        style={{ ...base, ...variants[variant], ...style }}
+        className={`app-button ${variant}`}
+      >
+        {children}
+      </button>
+    );
+  }
+);
+
+Button.displayName = 'Button'; // helpful for React DevTools
+
+export default Button;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from './Button';
 
 type ConfirmModalProps = {
@@ -33,11 +33,63 @@ export default function ConfirmModal({
   onCancel,
 }: ConfirmModalProps) {
   const [dontAskAgain, setDontAskAgain] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Keyboard shortcuts: Escape = cancel, Enter = confirm
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+      if (e.key === 'Enter') onConfirm(dontAskAgain);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [dontAskAgain, onCancel, onConfirm]);
+
+  // Focus trap: keep tabbing inside modal
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (!modal) return;
+
+    const focusable = modal.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    modal.addEventListener('keydown', handleTab);
+    (first || modal).focus();
+
+    return () => modal.removeEventListener('keydown', handleTab);
+  }, []);
 
   return (
-    <div style={backdropStyle}>
-      <div style={contentStyle}>
-        <p style={{ marginBottom: '0.75rem' }}>{message}</p>
+    <div style={backdropStyle} role="presentation" onClick={onCancel}>
+      <div
+        ref={modalRef}
+        style={contentStyle}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+        aria-describedby="confirm-message"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="confirm-title" style={{ marginTop: 0 }}>
+          Confirm Action
+        </h2>
+        <p id="confirm-message" style={{ marginBottom: '0.75rem' }}>
+          {message}
+        </p>
 
         <label
           style={{
