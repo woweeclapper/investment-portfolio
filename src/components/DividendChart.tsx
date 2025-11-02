@@ -11,6 +11,7 @@ import {
 } from 'chart.js';
 import { chartColors } from '../utils/chartColors';
 import { baseChartOptions } from '../utils/chartOptions';
+import type { Dividend } from '../utils/type';   // ✅ use shared type
 
 ChartJS.register(
   CategoryScale,
@@ -21,13 +22,6 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-
-type Dividend = {
-  id: number;
-  source: string;
-  amount: number;
-  date: string;
-};
 
 export default function DividendChart({
   dividends,

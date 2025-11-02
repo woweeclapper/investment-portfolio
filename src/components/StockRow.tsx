@@ -1,18 +1,11 @@
 import Button from './Button';
 import { usePositionMetrics } from '../hooks/usePositionMetrics';
-
-type Stock = {
-  id: number;
-  ticker: string;
-  shares: number;
-  buyPrice: number;
-  currentPrice?: number;
-};
+import type { Holding } from '../utils/type';   // ✅ shared type with id: string
 
 type Props = {
-  stock: Stock;
-  onEdit: (s: Stock) => void;
-  onRemove: (id: number, ticker: string) => void;
+  stock: Holding;
+  onEdit: (s: Holding) => void;
+  onRemove: (id: string, ticker: string) => void;   // ✅ id is string now
 };
 
 export function StockRow({ stock, onEdit, onRemove }: Props) {

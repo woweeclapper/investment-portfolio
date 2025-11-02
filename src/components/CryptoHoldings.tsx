@@ -15,17 +15,18 @@ import { HoldingRow } from './HoldingRow';
 import { debounce } from '../utils/debounce';
 import { isPositiveNumber } from '../utils/validators';
 
-type Holding = {
-  id: number;
-  coin: string;
+// ✅ Rename the type to avoid confusion with stock "Holding"
+type CryptoHolding = {
+  id: number;            // keep number for localStorage (Date.now())
+  coin: string;          // e.g., "bitcoin"
   amount: number;
   buyPrice: number;
   currentPrice?: number;
 };
 
 export default function CryptoHoldings() {
-  const [holdings, setHoldings] = useState<Holding[]>(() =>
-    loadData<Holding[]>('cryptoHoldings', [])
+  const [holdings, setHoldings] = useState<CryptoHolding[]>(() =>
+    loadData<CryptoHolding[]>('cryptoHoldings', [])
   );
   const [prices, setPrices] = useState<Record<string, { usd: number }>>({});
   const [coin, setCoin] = useState('bitcoin');
@@ -89,7 +90,7 @@ export default function CryptoHoldings() {
     const bp = parseFloat(buyPrice) || 0;
     if (!coin || !Number.isFinite(amt) || amt <= 0) return;
 
-    const newHolding: Holding = {
+    const newHolding: CryptoHolding = {
       id: Date.now(),
       coin,
       amount: amt,

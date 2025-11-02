@@ -4,25 +4,16 @@ import Badge from './Badge';
 import Button from './Button';
 import FormError from './FormError';
 import { fetchStockPrice } from '../utils/api';
-import {
-  saveData,
-  loadData,
-  saveConfirmFlags,
-  loadConfirmFlags,
-} from '../utils/storage';
+import { saveConfirmFlags, loadConfirmFlags } from '../utils/storage';
 import type { ConfirmFlags } from '../utils/storage';
 import { toNumberSafe } from '../utils/calculations';
 import { isValidTicker, isPositiveNumber } from '../utils/validators';
 import { debounce } from '../utils/debounce';
 import { StockRow } from './StockRow';
+import { supabase } from '../utils/supabaseClient';
 
-type Stock = {
-  id: number;
-  ticker: string;
-  shares: number;
-  buyPrice: number;
-  currentPrice?: number;
-};
+// ✅ Import Holding from your shared types file
+import type { Holding } from '../utils/type';
 
 type Prefs = {
   confirmRemove: boolean;
@@ -30,17 +21,16 @@ type Prefs = {
 };
 
 export default function StockTracker() {
-  const [stocks, setStocks] = useState<Stock[]>(() =>
-    loadData<Stock[]>('stocks', [])
-  );
-  const [prefs, setPrefs] = useState<Prefs>(() =>
-    loadData<Prefs>('stockPrefs', { confirmRemove: true, confirmEdit: true })
-  );
+  const [stocks, setStocks] = useState<Holding[]>([]);
+  const [prefs, setPrefs] = useState<Prefs>({
+    confirmRemove: true,
+    confirmEdit: true,
+  });
 
   const [ticker, setTicker] = useState('');
   const [shares, setShares] = useState('');
   const [buyPrice, setBuyPrice] = useState('');
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Modal
   const [showModal, setShowModal] = useState(false);
@@ -54,14 +44,48 @@ export default function StockTracker() {
     () => loadConfirmFlags().stocks
   );
 
-  // Persist stocks & prefs
+  // 🔹 Load holdings from Supabase on mount
   useEffect(() => {
-    saveData('stocks', stocks);
-  }, [stocks]);
+    // ✅ define the DB row type inside this effect (or at the top of the file if you prefer)
+    type HoldingRowDB = {
+      id: string;
+      ticker: string;
+      shares: number;
+      buy_price: number;
+      currentPrice?: number;
+    };
 
-  useEffect(() => {
-    saveData('stockPrefs', prefs);
-  }, [prefs]);
+    const fetchStocks = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('holdings')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('ticker');
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      // ✅ use the typed row instead of (r: any)
+      const normalized: Holding[] = (data as HoldingRowDB[]).map((r) => ({
+        id: r.id,
+        ticker: r.ticker,
+        shares: r.shares,
+        buyPrice: r.buy_price, // normalize snake_case → camelCase
+        currentPrice: r.currentPrice,
+      }));
+
+      setStocks(normalized);
+    };
+
+    fetchStocks();
+  }, []);
 
   // Persist module-level skipConfirm into shared confirm flags
   useEffect(() => {
@@ -86,7 +110,7 @@ export default function StockTracker() {
     };
 
     const debouncedFetch = debounce(loadPrices, 500);
-    debouncedFetch(); // run immediately once
+    debouncedFetch();
     const interval = setInterval(debouncedFetch, 300_000);
 
     return () => {
@@ -96,7 +120,7 @@ export default function StockTracker() {
   }, [tickers]);
 
   // Editing
-  const startEdit = (stock: Stock) => {
+  const startEdit = (stock: Holding) => {
     setEditingId(stock.id);
     setTicker(stock.ticker);
     setShares(stock.shares.toString());
@@ -108,34 +132,67 @@ export default function StockTracker() {
     isPositiveNumber(shares) &&
     isPositiveNumber(buyPrice);
 
-  const addOrUpdateStock = () => {
+  const addOrUpdateStock = async () => {
     if (!isValidForm) return;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
 
-    const doUpdate = () => {
+    const doUpdate = async () => {
       if (editingId) {
-        setStocks((prev) =>
-          prev.map((s) =>
-            s.id === editingId
-              ? {
-                  ...s,
-                  ticker: ticker.toUpperCase(),
-                  shares: toNumberSafe(shares),
-                  buyPrice: toNumberSafe(buyPrice),
-                }
-              : s
-          )
-        );
-        setEditingId(null);
-      } else {
-        setStocks((prev) => [
-          ...prev,
-          {
-            id: Date.now(),
+        const { error } = await supabase
+          .from('holdings')
+          .update({
             ticker: ticker.toUpperCase(),
             shares: toNumberSafe(shares),
-            buyPrice: toNumberSafe(buyPrice),
-          },
-        ]);
+            buy_price: toNumberSafe(buyPrice), // store snake_case in DB
+          })
+          .eq('id', editingId)
+          .eq('user_id', user.id);
+        if (error) {
+          console.error(error);
+        } else {
+          setStocks((prev) =>
+            prev.map((s) =>
+              s.id === editingId
+                ? {
+                    ...s,
+                    ticker: ticker.toUpperCase(),
+                    shares: toNumberSafe(shares),
+                    buyPrice: toNumberSafe(buyPrice),
+                  }
+                : s
+            )
+          );
+          setEditingId(null);
+        }
+      } else {
+        const { data, error } = await supabase
+          .from('holdings')
+          .insert([
+            {
+              user_id: user.id,
+              ticker: ticker.toUpperCase(),
+              shares: toNumberSafe(shares),
+              buy_price: toNumberSafe(buyPrice),
+            },
+          ])
+          .select()
+          .single();
+        if (error) {
+          console.error(error);
+        } else {
+          // Normalize returned row to Holding shape
+          const inserted = {
+            id: data.id,
+            ticker: data.ticker,
+            shares: data.shares,
+            buyPrice: data.buy_price ?? data.buyPrice,
+            currentPrice: data.currentPrice,
+          } as Holding;
+          setStocks((prev) => [...prev, inserted]);
+        }
       }
       setTicker('');
       setShares('');
@@ -157,8 +214,15 @@ export default function StockTracker() {
     }
   };
 
-  const removeStock = (id: number, t: string) => {
-    const doRemove = () => setStocks((prev) => prev.filter((s) => s.id !== id));
+  const removeStock = (id: string, t: string) => {
+    const doRemove = async () => {
+      const { error } = await supabase.from('holdings').delete().eq('id', id);
+      if (error) {
+        console.error(error);
+      } else {
+        setStocks((prev) => prev.filter((s) => s.id !== id));
+      }
+    };
 
     if (prefs.confirmRemove && !skipConfirm) {
       setModalMessage(`Are you sure you want to remove ${t}?`);
@@ -195,6 +259,7 @@ export default function StockTracker() {
         {skipConfirm && <Badge label="Confirmations off" tone="danger" />}
       </h2>
 
+      {/* Form */}
       <div
         style={{
           display: 'flex',

@@ -1,6 +1,6 @@
 const CURRENT_VERSION = 2;
 
-// Generic safe load
+// 🔹 Generic safe load
 export function loadData<T>(
   key: string,
   fallback: T,
@@ -20,12 +20,14 @@ export function loadData<T>(
   }
 }
 
-// Generic safe save
+// 🔹 Generic safe save
 export function saveData<T>(key: string, data: T, version = CURRENT_VERSION) {
   localStorage.setItem(key, JSON.stringify({ _v: version, data }));
 }
 
-// 🔹 Typed confirm flags
+// ----------------------------------------------------
+// 🔹 Typed confirm flags (UI-only, not in Supabase)
+// ----------------------------------------------------
 export type ConfirmFlags = {
   crypto: boolean;
   stocks: boolean;
@@ -38,25 +40,20 @@ const DEFAULT_FLAGS: ConfirmFlags = {
   dividends: false,
 };
 
+const CONFIRM_FLAGS_KEY = 'confirmFlags';
+
 // Save confirm flags (merge with defaults)
 export function saveConfirmFlags(flags: Partial<ConfirmFlags>) {
   const merged = { ...DEFAULT_FLAGS, ...flags };
-  localStorage.setItem('confirmFlags', JSON.stringify(merged));
+  saveData(CONFIRM_FLAGS_KEY, merged);
 }
 
 // Load confirm flags safely
 export function loadConfirmFlags(): ConfirmFlags {
-  try {
-    const raw = localStorage.getItem('confirmFlags');
-    if (!raw) return DEFAULT_FLAGS;
-    const parsed = JSON.parse(raw);
-    return { ...DEFAULT_FLAGS, ...parsed };
-  } catch {
-    return DEFAULT_FLAGS;
-  }
+  return loadData(CONFIRM_FLAGS_KEY, DEFAULT_FLAGS);
 }
 
-// 🔹 Reset all confirmations at once
+// Reset all confirmations at once
 export function restoreAllConfirmations() {
   saveConfirmFlags(DEFAULT_FLAGS);
 }

@@ -1,11 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { formatCurrency, formatDate } from '../utils/formatters';
-import {
-  saveData,
-  loadData,
-  saveConfirmFlags,
-  loadConfirmFlags,
-} from '../utils/storage';
+import { saveConfirmFlags, loadConfirmFlags } from '../utils/storage';
 import type { ConfirmFlags } from '../utils/storage';
 import { toNumberSafe } from '../utils/calculations';
 import ConfirmModal from './ConfirmModal';
@@ -13,31 +8,39 @@ import Badge from './Badge';
 import DividendChart from './DividendChart';
 import Button from './Button';
 import FormError from './FormError';
-
-type Dividend = {
-  id: number;
-  source: string;
-  amount: number;
-  date: string; // YYYY-MM-DD
-};
+import { supabase } from '../utils/supabaseClient';
+import type { Dividend } from '../utils/type'; // ✅ single source of truth
 
 export default function DividendLogger() {
-  const [dividends, setDividends] = useState<Dividend[]>(() =>
-    loadData<Dividend[]>('dividends', [])
-  );
+  const [dividends, setDividends] = useState<Dividend[]>([]);
   const [source, setSource] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState('');
 
-  const [confirmId, setConfirmId] = useState<number | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [skipConfirm, setSkipConfirm] = useState<boolean>(
     () => loadConfirmFlags().dividends
   );
 
+  // Load dividends from Supabase
   useEffect(() => {
-    saveData('dividends', dividends);
-  }, [dividends]);
+    const fetchDividends = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('dividends')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: true });
+      if (error) console.error(error);
+      else setDividends(data as Dividend[]);
+    };
+    fetchDividends();
+  }, []);
 
+  // Persist skipConfirm flag locally
   useEffect(() => {
     const flags: ConfirmFlags = loadConfirmFlags();
     saveConfirmFlags({ ...flags, dividends: skipConfirm });
@@ -51,31 +54,57 @@ export default function DividendLogger() {
 
   const isValid = isValidSource && isValidAmount && isValidDate;
 
-  const addDividend = () => {
+  const addDividend = async () => {
     if (!isValid) return;
-    const newDividend: Dividend = {
-      id: Date.now(),
-      source: source.trim(),
-      amount: amountNum,
-      date,
-    };
-    setDividends((prev) => [...prev, newDividend]);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('dividends')
+      .insert([
+        {
+          user_id: user.id,
+          source: source.trim(),
+          amount: amountNum,
+          date,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setDividends((prev) => [...prev, data as Dividend]);
     setSource('');
     setAmount('');
     setDate('');
   };
 
-  const removeDividend = (id: number) => {
+  const removeDividend = (id: string) => {
     if (skipConfirm) {
-      setDividends((prev) => prev.filter((d) => d.id !== id));
+      actuallyRemove(id);
     } else {
       setConfirmId(id);
     }
   };
 
+  const actuallyRemove = async (id: string) => {
+    const { error } = await supabase.from('dividends').delete().eq('id', id);
+    if (error) {
+      console.error(error);
+      return;
+    }
+    setDividends((prev) => prev.filter((d) => d.id !== id));
+  };
+
   const confirmRemove = (dontAskAgain: boolean) => {
     if (confirmId != null) {
-      setDividends((prev) => prev.filter((d) => d.id !== confirmId));
+      actuallyRemove(confirmId);
       setConfirmId(null);
       if (dontAskAgain) setSkipConfirm(true);
     }
@@ -103,7 +132,7 @@ export default function DividendLogger() {
         Dividend Logger
         {skipConfirm && <Badge label="Confirmations off" tone="danger" />}
       </h2>
-
+      {/* Form */}
       <div
         style={{
           display: 'flex',
@@ -157,6 +186,7 @@ export default function DividendLogger() {
         </Button>
       </div>
 
+      {/* List */}
       {dividends.length === 0 ? (
         <p style={{ color: '#9aa4ad' }}>
           No dividends yet. Add entries to see totals and charts.

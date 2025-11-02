@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { saveData, loadData } from '../utils/storage';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -14,6 +13,8 @@ import {
 import Button from './Button';
 import { chartColors } from '../utils/chartColors';
 import { baseChartOptions } from '../utils/chartOptions';
+import { supabase } from '../utils/supabaseClient';
+import type { Holding, Dividend, CryptoHolding, PortfolioSnapshot } from '../utils/type';
 
 ChartJS.register(
   CategoryScale,
@@ -25,65 +26,130 @@ ChartJS.register(
   Legend
 );
 
-type Stock = {
-  id: number;
-  ticker: string;
-  shares: number;
-  buyPrice: number;
-  currentPrice?: number;
-};
-
-type Dividend = {
-  id: number;
-  source: string;
-  amount: number;
-  date: string;
-};
-
-type Holding = {
-  id: number;
-  coin: string;
-  amount: number;
-  buyPrice: number;
-  currentPrice: number;
-};
-
-type Snapshot = {
-  date: string;
-  stockValue: number;
-  dividends: number;
-  cryptoValue: number;
-};
-
 export default function PortfolioPerformance() {
-  const [history, setHistory] = useState<Snapshot[]>(() =>
-    loadData<Snapshot[]>('portfolioHistory', [])
-  );
-  const [dividends, setDividends] = useState<Dividend[]>(() =>
-    loadData<Dividend[]>('dividends', [])
-  );
-  const [stocks, setStocks] = useState<Stock[]>(() =>
-    loadData<Stock[]>('stocks', [])
-  );
-  const [cryptoHoldings, setCryptoHoldings] = useState<Holding[]>(() =>
-    loadData<Holding[]>('cryptoHoldings', [])
-  );
+  // Live arrays from Supabase
+  const [dividends, setDividends] = useState<Dividend[]>([]);
+  const [stocks, setStocks] = useState<Holding[]>([]);
+  const [cryptoHoldings, setCryptoHoldings] = useState<CryptoHolding[]>([]);
 
+  // Snapshot history from Supabase
+  const [history, setHistory] = useState<PortfolioSnapshot[]>([]);
   const [showCumulative, setShowCumulative] = useState(true);
 
-  // Persist history
+  // Load live data + snapshots from Supabase on mount
   useEffect(() => {
-    saveData('portfolioHistory', history);
-  }, [history]);
+    const loadAll = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-  // Re-load all modules on mount
-  useEffect(() => {
-    setDividends(loadData<Dividend[]>('dividends', []));
-    setStocks(loadData<Stock[]>('stocks', []));
-    setCryptoHoldings(loadData<Holding[]>('cryptoHoldings', []));
+      // Stocks
+      type HoldingRowDB = {
+        id: string;
+        user_id: string;
+        ticker: string;
+        shares: number;
+        buy_price: number;
+        currentPrice?: number;
+      };
+      const { data: stockData, error: stockErr } = await supabase
+        .from('holdings')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('ticker');
+      if (!stockErr && stockData) {
+        setStocks(
+          (stockData as HoldingRowDB[]).map((r) => ({
+            id: r.id,
+            ticker: r.ticker,
+            shares: r.shares,
+            buyPrice: r.buy_price,
+            currentPrice: r.currentPrice,
+          }))
+        );
+      } else if (stockErr) console.error('Failed to load holdings', stockErr);
+
+      // Dividends
+      type DividendRowDB = {
+        id: string;
+        user_id: string;
+        source: string;
+        amount: number;
+        date: string;
+      };
+      const { data: divData, error: divErr } = await supabase
+        .from('dividends')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date');
+      if (!divErr && divData) {
+        setDividends(
+          (divData as DividendRowDB[]).map((r) => ({
+            id: r.id,
+            source: r.source,
+            amount: r.amount,
+            date: r.date,
+          }))
+        );
+      } else if (divErr) console.error('Failed to load dividends', divErr);
+
+      // Crypto
+      type CryptoHoldingRowDB = {
+        id: string;
+        user_id: string;
+        coin: string;
+        amount: number;
+        buy_price: number;
+        currentPrice?: number;
+      };
+      const { data: cryptoData, error: cryptoErr } = await supabase
+        .from('crypto_holdings')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('coin');
+      if (!cryptoErr && cryptoData) {
+        setCryptoHoldings(
+          (cryptoData as CryptoHoldingRowDB[]).map((r) => ({
+            id: r.id,
+            coin: r.coin,
+            amount: r.amount,
+            buyPrice: r.buy_price,
+            currentPrice: r.currentPrice,
+          }))
+        );
+      } else if (cryptoErr) console.error('Failed to load crypto holdings', cryptoErr);
+
+      // Snapshots
+      type PortfolioHistoryRowDB = {
+        id: string;
+        user_id: string;
+        date: string;
+        stock_value: number;
+        crypto_value: number;
+        dividends: number;
+        inserted_at: string;
+      };
+      const { data: snapData, error: snapErr } = await supabase
+        .from('portfolio_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date'); // sorted by string date (matches your display)
+      if (!snapErr && snapData) {
+        setHistory(
+          (snapData as PortfolioHistoryRowDB[]).map((r) => ({
+            id: r.id,
+            date: r.date,
+            stockValue: r.stock_value,
+            cryptoValue: r.crypto_value,
+            dividends: r.dividends,
+          }))
+        );
+      } else if (snapErr) console.error('Failed to load portfolio history', snapErr);
+    };
+
+    loadAll();
   }, []);
 
-  // 🔹 Memoize current aggregate values used in snapshots
+  // 🔹 Memoize current aggregate values used in snapshots (live arrays)
   const stockValue = useMemo(() => {
     return stocks.reduce((sum, s) => sum + (s.currentPrice ?? 0) * s.shares, 0);
   }, [stocks]);
@@ -99,30 +165,58 @@ export default function PortfolioPerformance() {
     return dividends.reduce((sum, d) => sum + d.amount, 0);
   }, [dividends]);
 
-  // Helper: take a daily snapshot (uses memoized aggregates)
-  const takeSnapshot = () => {
+  // Helper: take a daily snapshot (Supabase insert + local reflect)
+  const takeSnapshot = async () => {
     const today = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
 
-    if (!history.find((h) => h.date === today)) {
+    if (history.find((h) => h.date === today)) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('portfolio_history')
+      .insert([
+        {
+          user_id: user.id,
+          date: today,
+          stock_value: stockValue,
+          crypto_value: cryptoValue,
+          dividends: totalDividends,
+        },
+      ])
+      .select()
+      .single();
+
+    if (!error && data) {
       setHistory((prev) => [
         ...prev,
-        { date: today, stockValue, dividends: totalDividends, cryptoValue },
+        {
+          id: data.id,
+          date: data.date,
+          stockValue: data.stock_value,
+          cryptoValue: data.crypto_value,
+          dividends: data.dividends,
+        },
       ]);
+    } else if (error) {
+      console.error('Failed to insert snapshot', error);
     }
   };
 
-  // Take initial snapshot
+  // Take initial snapshot when we have any data
   useEffect(() => {
     if (
       stocks.length > 0 ||
       dividends.length > 0 ||
       cryptoHoldings.length > 0
     ) {
-      takeSnapshot();
+      // fire-and-forget; we don't await inside effect to avoid cleanup races
+      void takeSnapshot();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stocks, dividends, cryptoHoldings]);
@@ -136,8 +230,8 @@ export default function PortfolioPerformance() {
 
     let interval: ReturnType<typeof setInterval>;
     const timeout: ReturnType<typeof setTimeout> = setTimeout(() => {
-      takeSnapshot();
-      interval = setInterval(takeSnapshot, 24 * 60 * 60 * 1000);
+      void takeSnapshot();
+      interval = setInterval(() => void takeSnapshot(), 24 * 60 * 60 * 1000);
     }, msUntilMidnight);
 
     return () => {
@@ -167,8 +261,10 @@ export default function PortfolioPerformance() {
     return { monthlyMap: map, monthOrder: order };
   }, [dividends]);
 
-  // 🔹 Memoize chart datasets
+  // 🔹 Memoize chart datasets (guard monthly array lengths)
   const chartData = useMemo(() => {
+    const monthlyDividends = monthOrder.map((m) => monthlyMap[m] ?? 0);
+
     return {
       labels: showCumulative ? history.map((h) => h.date) : monthOrder,
       datasets: [
@@ -190,7 +286,7 @@ export default function PortfolioPerformance() {
           label: showCumulative ? 'Cumulative Dividends' : 'Monthly Dividends',
           data: showCumulative
             ? history.map((h) => h.dividends)
-            : monthOrder.map((m) => monthlyMap[m]),
+            : monthlyDividends,
           borderColor: chartColors.dividends.border,
           backgroundColor: chartColors.dividends.background,
         },
@@ -282,7 +378,7 @@ export default function PortfolioPerformance() {
             : 'Switch to Cumulative View'}
         </Button>
 
-        <Button variant="primary" onClick={takeSnapshot}>
+        <Button variant="primary" onClick={() => void takeSnapshot()}>
           Take Snapshot Now
         </Button>
       </div>
