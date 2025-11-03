@@ -5,17 +5,15 @@ import type { Session } from '@supabase/supabase-js';
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true); // 🔹 new: track loading state
+  const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
 
   useEffect(() => {
-    // Check for existing session on mount
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      setLoading(false); // stop loading once we know
+      setLoading(false);
     });
 
-    // Subscribe to auth state changes
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
       setSession(sess);
       setLoading(false);
@@ -27,7 +25,6 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (loading) {
-    // 🔹 Prevents flicker between login form and dashboard
     return <div style={{ padding: '2rem' }}>Loading session…</div>;
   }
 
@@ -38,10 +35,17 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         <form
           onSubmit={async (e) => {
             e.preventDefault();
+
+            const redirectTo =
+              import.meta.env.MODE === 'production'
+                ? import.meta.env.VITE_SITE_URL
+                : window.location.origin;
+
             const { error } = await supabase.auth.signInWithOtp({
               email,
-              options: { emailRedirectTo: window.location.origin },
+              options: { emailRedirectTo: redirectTo },
             });
+
             if (error) {
               alert(error.message);
             } else {
@@ -62,7 +66,6 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Logged-in view: show badge + sign out
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
