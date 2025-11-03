@@ -2,9 +2,15 @@
 
 A modular personal finance dashboard built with **React + TypeScript**, designed to track crypto holdings, stock positions, dividend income, and overall portfolio performance.
 
-
 This project emphasizes **clarity**, **modularity**, and **safety nets** — every action is confirmed via reusable modals, with restore buttons to re‑enable confirmations locally or globally.
-=======
+
+---
+
+## 🎥 Demo
+
+![Investment Dashboard Demo](public/investmentdashboard.mp4)
+
+👉 [View Live Deployment](https://joeinvestmentportfolio.vercel.app)
 
 ---
 
@@ -38,7 +44,7 @@ This project emphasizes **clarity**, **modularity**, and **safety nets** — eve
 
 - `storage.ts` — Local persistence for holdings and confirm flags  
 - `formatters.ts` — Consistent currency and date formatting  
-- `api.ts` — Fetch live crypto prices from CoinGecko  
+- `api.ts` — Fetch live crypto prices from CoinGecko & stock prices from Finnhub  
 - `ConfirmModal.tsx` — Reusable modal with dark styling, “Don’t ask again,” and restore logic
 
 ---
@@ -62,8 +68,7 @@ This project emphasizes **clarity**, **modularity**, and **safety nets** — eve
 git clone https://github.com/your-username/investment-dashboard.git
 cd investment-dashboard
 npm install
-npm start
-
+npm run dev
 
 Project Structure
 src/
@@ -79,8 +84,3 @@ src/
  │    ├── formatters.ts
  │    └── api.ts
  └── App.tsx
-
-
-📜 License
-MIT License — feel free to use, modify, and share.
-
