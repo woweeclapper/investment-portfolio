@@ -1,11 +1,11 @@
 import Button from './Button';
 import { usePositionMetrics } from '../hooks/usePositionMetrics';
-import type { Holding } from '../utils/type';   // ✅ shared type with id: string
+import type { Holding } from '../utils/type';
 
 type Props = {
   stock: Holding;
   onEdit: (s: Holding) => void;
-  onRemove: (id: string, ticker: string) => void;   // ✅ id is string now
+  onRemove: (id: string, ticker: string) => void;
 };
 
 export function StockRow({ stock, onEdit, onRemove }: Props) {
@@ -16,16 +16,21 @@ export function StockRow({ stock, onEdit, onRemove }: Props) {
   });
 
   return (
-    <li>
-      {stock.ticker} — {stock.shares} shares @ ${stock.buyPrice.toFixed(2)} |
+    <li style={{ marginBottom: '0.5rem' }}>
+      <strong>{stock.ticker}</strong> — {stock.shares} shares @ $
+      {stock.buyPrice.toFixed(2)} |
       Cost Basis: ${costBasis.toFixed(2)}
-      {currentValue != null && (
+      {currentValue !== null && (
         <>
-          {' '}
-          | Current: ${stock.currentPrice?.toFixed(2)} | Value: $
-          {currentValue.toFixed(2)} | P/L: {pl?.toFixed(2)} ({pct?.toFixed(2)}%)
+          {' '}| Current: ${stock.currentPrice?.toFixed(2) ?? '—'}
+          {' '}| Value: ${currentValue.toFixed(2)}
+          {' '}| P/L:{' '}
+          <span style={{ color: pl >= 0 ? 'green' : 'red' }}>
+            {pl.toFixed(2)} ({pct.toFixed(2)}%)
+          </span>
         </>
       )}
+      {' '}
       <Button onClick={() => onEdit(stock)}>Edit</Button>
       <Button variant="danger" onClick={() => onRemove(stock.id, stock.ticker)}>
         Remove
