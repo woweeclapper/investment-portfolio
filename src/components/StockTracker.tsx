@@ -105,7 +105,7 @@ export default function StockTracker() {
         stocks.map(async (s) => {
           const price = await fetchStockPrice(s.ticker);
           //testing rendering and shit
-          //console.log('Fetched price for', s.ticker, '=>', price); 
+          //console.log('Fetched price for', s.ticker, '=>', price);
           return price != null ? { ...s, currentPrice: price } : s;
         })
       );
@@ -121,7 +121,7 @@ export default function StockTracker() {
       clearInterval(interval);
     };
   }, [tickers]);
-
+  ////////////////////////////////////////////////////////////////////////////////////
   // Editing
   const startEdit = (stock: Holding) => {
     setEditingId(stock.id);
@@ -272,6 +272,9 @@ export default function StockTracker() {
     );
   }, [stocks]);
 
+  // ✅ compute percentage separately
+  const totalPct = totalCostBasis > 0 ? (totalPL / totalCostBasis) * 100 : 0;
+
   return (
     <div>
       <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -372,7 +375,7 @@ export default function StockTracker() {
         <strong>Total Cost Basis:</strong> ${totalCostBasis.toFixed(2)} |{' '}
         <strong>P/L:</strong>{' '}
         <span style={{ color: totalPL >= 0 ? 'green' : 'red' }}>
-          ${totalPL.toFixed(2)}
+          ${totalPL.toFixed(2)} ({totalPct.toFixed(2)}%)
         </span>
       </div>
 
