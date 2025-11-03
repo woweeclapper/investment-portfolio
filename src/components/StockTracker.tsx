@@ -104,7 +104,8 @@ export default function StockTracker() {
       const updated = await Promise.all(
         stocks.map(async (s) => {
           const price = await fetchStockPrice(s.ticker);
-          console.log('Fetched price for', s.ticker, '=>', price);
+          //testing rendering and shit
+          //console.log('Fetched price for', s.ticker, '=>', price); 
           return price != null ? { ...s, currentPrice: price } : s;
         })
       );

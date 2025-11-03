@@ -8,16 +8,23 @@ type PositionInput = {
   currentPrice?: number | null;
 };
 
+type PositionMetrics = {
+  costBasis: number;
+  currentValue: number;
+  pl: number;
+  pct: number;
+};
+
 export function usePositionMetrics({
   amount,
   buyPrice,
   currentPrice,
-}: PositionInput) {
+}: PositionInput): PositionMetrics {
   return useMemo(() => {
     const costBasis = amount * buyPrice;
 
-    // If no current price yet, return safe defaults
     if (currentPrice == null) {
+      // Safe defaults when no price yet
       return { costBasis, currentValue: 0, pl: 0, pct: 0 };
     }
 
