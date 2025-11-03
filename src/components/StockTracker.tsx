@@ -52,7 +52,7 @@ export default function StockTracker() {
       ticker: string;
       shares: number;
       buy_price: number;
-      currentPrice?: number;
+      currentPrice?: number | null;
     };
 
     const fetchStocks = async () => {
@@ -72,13 +72,14 @@ export default function StockTracker() {
         return;
       }
 
-      // ✅ use the typed row instead of (r: any)
+      // ✅ normalize snake_case → camelCase and ensure currentPrice is number | null
+      // After supabase fetch
       const normalized: Holding[] = (data as HoldingRowDB[]).map((r) => ({
         id: r.id,
         ticker: r.ticker,
         shares: r.shares,
-        buyPrice: r.buy_price, // normalize snake_case → camelCase
-        currentPrice: r.currentPrice,
+        buyPrice: r.buy_price,
+        currentPrice: r.currentPrice ?? undefined, // ✅ use undefined, not null
       }));
 
       setStocks(normalized);
@@ -184,13 +185,14 @@ export default function StockTracker() {
           console.error(error);
         } else {
           // Normalize returned row to Holding shape
-          const inserted = {
+          const inserted: Holding = {
             id: data.id,
             ticker: data.ticker,
             shares: data.shares,
             buyPrice: data.buy_price ?? data.buyPrice,
-            currentPrice: data.currentPrice,
-          } as Holding;
+            currentPrice: data.currentPrice ?? undefined, // ✅ use undefined, not null
+          };
+
           setStocks((prev) => [...prev, inserted]);
         }
       }
@@ -244,12 +246,28 @@ export default function StockTracker() {
     setSkipConfirm(false);
   };
 
-  // Memoized portfolio total
+  // ===== SECOND HALF =====
+
+  // Memoized portfolio totals: value, cost basis, and P/L
   const totalValue = useMemo(() => {
     return stocks.reduce((sum, s) => {
       const price = s.currentPrice ?? 0;
       return sum + s.shares * price;
     }, 0);
+  }, [stocks]);
+
+  const { totalCostBasis, totalPL } = useMemo(() => {
+    return stocks.reduce(
+      (acc, s) => {
+        const price = s.currentPrice ?? 0;
+        const costBasis = s.shares * s.buyPrice;
+        const currentValue = s.shares * price;
+        acc.totalCostBasis += costBasis;
+        acc.totalPL += currentValue - costBasis;
+        return acc;
+      },
+      { totalCostBasis: 0, totalPL: 0 }
+    );
   }, [stocks]);
 
   return (
@@ -329,20 +347,31 @@ export default function StockTracker() {
         </div>
       </div>
 
-      <ul>
-        {stocks.map((s) => (
-          <StockRow
-            key={s.id}
-            stock={s}
-            onEdit={startEdit}
-            onRemove={removeStock}
-          />
-        ))}
-      </ul>
+      {stocks.length === 0 ? (
+        <p style={{ color: '#9aa4ad' }}>
+          No stocks yet. Add your first position above.
+        </p>
+      ) : (
+        <ul>
+          {stocks.map((s) => (
+            <StockRow
+              key={s.id}
+              stock={s}
+              onEdit={startEdit}
+              onRemove={removeStock}
+            />
+          ))}
+        </ul>
+      )}
 
       <div style={{ marginTop: '0.75rem' }}>
         <strong>Total Value:</strong> $
-        {totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+        {totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })} |{' '}
+        <strong>Total Cost Basis:</strong> ${totalCostBasis.toFixed(2)} |{' '}
+        <strong>P/L:</strong>{' '}
+        <span style={{ color: totalPL >= 0 ? 'green' : 'red' }}>
+          ${totalPL.toFixed(2)}
+        </span>
       </div>
 
       {showModal && modalAction && (

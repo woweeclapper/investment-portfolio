@@ -17,8 +17,7 @@ export function StockRow({ stock, onEdit, onRemove }: Props) {
 
   return (
     <li style={{ marginBottom: '0.5rem' }}>
-      <strong>{stock.ticker}</strong> — {stock.shares} shares @ $
-      {stock.buyPrice.toFixed(2)} |
+      <strong>{stock.ticker}</strong> — {stock.shares} shares @ ${stock.buyPrice.toFixed(2)} |
       Cost Basis: ${costBasis.toFixed(2)}
       {currentValue !== null && (
         <>
