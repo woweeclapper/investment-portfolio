@@ -12,12 +12,15 @@ export async function fetchStockPrice(ticker: string): Promise<number | null> {
   try {
     const res = await axios.get(`${FINNHUB_URL}/quote`, {
       params: {
-        symbol: ticker,
+        symbol: ticker.toUpperCase(), // ensure uppercase
         token: FINNHUB_KEY,
       },
     });
-    return res.data?.c ?? null;
-  } catch {
+
+    const price = Number(res.data?.c);
+    return isNaN(price) || price <= 0 ? null : price;
+  } catch (err) {
+    console.error('Error fetching stock price:', err);
     return null;
   }
 }
