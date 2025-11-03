@@ -15,13 +15,15 @@ export function StockRow({ stock, onEdit, onRemove }: Props) {
     currentPrice: stock.currentPrice,
   });
 
+  const hasPrice = typeof stock.currentPrice === 'number';
+
   return (
     <li style={{ marginBottom: '0.5rem' }}>
-      <strong>{stock.ticker}</strong> — {stock.shares} shares @ ${stock.buyPrice.toFixed(2)} |
-      Cost Basis: ${costBasis.toFixed(2)}
-      {currentValue !== null && (
+      <strong>{stock.ticker}</strong> — {stock.shares} shares @ $
+      {stock.buyPrice.toFixed(2)} | Cost Basis: ${costBasis.toFixed(2)}
+      {hasPrice && (
         <>
-          {' '}| Current: ${stock.currentPrice?.toFixed(2) ?? '—'}
+          {' '}| Current: ${stock.currentPrice!.toFixed(2)}
           {' '}| Value: ${currentValue.toFixed(2)}
           {' '}| P/L:{' '}
           <span style={{ color: pl >= 0 ? 'green' : 'red' }}>

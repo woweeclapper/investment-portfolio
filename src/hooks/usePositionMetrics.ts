@@ -15,9 +15,12 @@ export function usePositionMetrics({
 }: PositionInput) {
   return useMemo(() => {
     const costBasis = amount * buyPrice;
+
+    // If no current price yet, return safe defaults
     if (currentPrice == null) {
-      return { costBasis, currentValue: null, pl: null, pct: null };
+      return { costBasis, currentValue: 0, pl: 0, pct: 0 };
     }
+
     const currentValue = amount * currentPrice;
     return {
       costBasis,
