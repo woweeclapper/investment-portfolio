@@ -1,15 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
-import { formatCurrency, formatDate } from '../utils/formatters';
-import { saveConfirmFlags, loadConfirmFlags } from '../utils/storage';
-import type { ConfirmFlags } from '../utils/storage';
-import { toNumberSafe } from '../utils/calculations';
-import ConfirmModal from './ConfirmModal';
-import Badge from './Badge';
+import { formatCurrency, formatDate } from '../../../utils/Math & Logic/formatters';
+import { saveConfirmFlags, loadConfirmFlags } from '../../../utils/Data & API/storage';
+import type { ConfirmFlags } from '../../../utils/Data & API/storage';
+import { toNumberSafe } from '../../../utils/Math & Logic/calculations';
+import ConfirmModal from '../../Feedback & Safety/ConfirmModal';
+import Badge from '../../UI Primitives/Badge';
 import DividendChart from './DividendChart';
-import Button from './Button';
-import FormError from './FormError';
-import { supabase } from '../utils/supabaseClient';
-import type { Dividend } from '../utils/type'; // ✅ single source of truth
+import Button from '../../UI Primitives/Button';
+import FormError from '../../Feedback & Safety/FormError';
+import { supabase } from '../../../utils/Infrastucture/supabaseClient';
+import type { Dividend } from '../../../types/type'; // ✅ single source of truth
 
 export default function DividendLogger() {
   const [dividends, setDividends] = useState<Dividend[]>([]);

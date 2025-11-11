@@ -1,6 +1,6 @@
-import Button from './Button';
-import { usePositionMetrics } from '../hooks/usePositionMetrics';
-import type { Holding } from '../utils/type';
+import Button from '../../UI Primitives/Button';
+import { usePositionMetrics } from '../../../hooks/usePositionMetrics';
+import type { Holding } from '../../../types/type';
 
 type Props = {
   stock: Holding;

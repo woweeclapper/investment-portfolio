@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Button from './Button';
+import Button from '../UI Primitives/Button';
 
 type ConfirmModalProps = {
   message: string;

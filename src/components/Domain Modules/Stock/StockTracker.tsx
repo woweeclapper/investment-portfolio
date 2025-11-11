@@ -1,19 +1,19 @@
 import { useState, useEffect, useMemo } from 'react';
-import ConfirmModal from './ConfirmModal';
-import Badge from './Badge';
-import Button from './Button';
-import FormError from './FormError';
-import { fetchStockPrice } from '../utils/api';
-import { saveConfirmFlags, loadConfirmFlags } from '../utils/storage';
-import type { ConfirmFlags } from '../utils/storage';
-import { toNumberSafe } from '../utils/calculations';
-import { isValidTicker, isPositiveNumber } from '../utils/validators';
-import { debounce } from '../utils/debounce';
+import ConfirmModal from '../../Feedback & Safety/ConfirmModal';
+import Badge from '../../UI Primitives/Badge';
+import Button from '../../UI Primitives/Button';
+import FormError from '../../Feedback & Safety/FormError';
+import { fetchStockPrice } from '../../../utils/Data & API/api';
+import { saveConfirmFlags, loadConfirmFlags } from '../../../utils/Data & API/storage';
+import type { ConfirmFlags } from '../../../utils/Data & API/storage';
+import { toNumberSafe } from '../../../utils/Math & Logic/calculations';
+import { isValidTicker, isPositiveNumber } from '../../../utils/Data & API/validators';
+import { debounce } from '../../../utils/Infrastucture/debounce';
 import { StockRow } from './StockRow';
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../../../utils/Infrastucture/supabaseClient';
 
 // ✅ Import Holding from your shared types file
-import type { Holding } from '../utils/type';
+import type { Holding } from '../../../types/type';
 
 type Prefs = {
   confirmRemove: boolean;

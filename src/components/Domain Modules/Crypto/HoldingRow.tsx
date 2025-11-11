@@ -1,5 +1,5 @@
-import Button from './Button';
-import { usePositionMetrics } from '../hooks/usePositionMetrics';
+import Button from '../../UI Primitives/Button';
+import { usePositionMetrics } from '../../../hooks/usePositionMetrics';
 
 type Holding = {
   id: number;

@@ -1,19 +1,19 @@
 import { useEffect, useState, useMemo } from 'react';
-import ConfirmModal from './ConfirmModal';
-import Badge from './Badge';
-import Button from './Button';
-import FormError from './FormError';
+import ConfirmModal from '../../Feedback & Safety/ConfirmModal';
+import Badge from '../../UI Primitives/Badge';
+import Button from '../../UI Primitives/Button';
+import FormError from '../../Feedback & Safety/FormError';
 import {
   saveData,
   loadData,
   saveConfirmFlags,
   loadConfirmFlags,
-} from '../utils/storage';
-import type { ConfirmFlags } from '../utils/storage';
-import { fetchCryptoPrices } from '../utils/api';
+} from '../../../utils/Data & API/storage';
+import type { ConfirmFlags } from '../../../utils/Data & API/storage';
+import { fetchCryptoPrices } from '../../../utils/Data & API/api';
 import { HoldingRow } from './HoldingRow';
-import { debounce } from '../utils/debounce';
-import { isPositiveNumber } from '../utils/validators';
+import { debounce } from '../../../utils/Infrastucture/debounce';
+import { isPositiveNumber } from '../../../utils/Data & API/validators';
 
 // ✅ Rename the type to avoid confusion with stock "Holding"
 type CryptoHolding = {

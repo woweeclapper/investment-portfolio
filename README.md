@@ -70,17 +70,26 @@ cd investment-dashboard
 npm install
 npm run dev
 
-Project Structure
-src/
- ├── components/
- │    ├── CryptoPrices.tsx
- │    ├── CryptoHoldings.tsx
- │    ├── StockTracker.tsx
- │    ├── DividendLogger.tsx
- │    ├── PortfolioPerformance.tsx
- │    └── ConfirmModal.tsx
- ├── utils/
- │    ├── storage.ts
- │    ├── formatters.ts
- │    └── api.ts
- └── App.tsx
+🧩 Project Structure Overview
+Components
+
+UI Primitives: badge, button
+Feedback & Safety: confirmmodal, errorboundary, formerror
+Domain Modules:
+    Crypto: cryptoholding, cryptoprices, holdingrow
+    Dividend: dividendchart, dividendlogger 
+    Stock: stockrow, stocktracker
+    portfolioperformance
+    Login: Authgate 
+
+Hooks
+usePositionMetric → custom logic for portfolio/holding calculations. 
+
+Types
+    types: shared type definitions for domain 
+
+Utils
+Data & API: api, storage, validator
+Math & Logic: calculation, formatter
+Charts: chartcolors, chartoptions
+Infra: constants, debounce, supabaseClient

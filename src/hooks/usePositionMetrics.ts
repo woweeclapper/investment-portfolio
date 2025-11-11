@@ -1,6 +1,6 @@
 // src/hooks/usePositionMetrics.ts
 import { useMemo } from 'react';
-import { profitLoss, percentChange } from '../utils/calculations';
+import { profitLoss, percentChange } from '../utils/Math & Logic/calculations';
 
 type PositionInput = {
   amount: number;

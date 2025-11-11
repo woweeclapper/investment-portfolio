@@ -1,15 +1,15 @@
 import './App.css';
-import CryptoPrices from './components/CryptoPrices';
-import DividendLogger from './components/DividendLogger';
-import StockTracker from './components/StockTracker';
-import PortfolioPerformance from './components/PortfolioPerformance';
-import CryptoHoldings from './components/CryptoHoldings';
-import { restoreAllConfirmations } from './utils/storage';
-import Button from './components/Button';
-import ErrorBoundary from './components/ErrorBoundary';
+import CryptoPrices from './components/Domain Modules/Crypto/CryptoPrices';
+import DividendLogger from './components/Domain Modules/Dividend/DividendLogger';
+import StockTracker from './components/Domain Modules/Stock/StockTracker';
+import PortfolioPerformance from './components/Domain Modules/PortfolioPerformance';
+import CryptoHoldings from './components/Domain Modules/Crypto/CryptoHoldings';
+import { restoreAllConfirmations } from './utils/Data & API/storage';
+import Button from './components/UI Primitives/Button';
+import ErrorBoundary from './components/Feedback & Safety/ErrorBoundary';
 
 // 🔹 Import the AuthGate wrapper
-import AuthGate from './components/AuthGate';
+import AuthGate from './components/Domain Modules/Login/AuthGate';
 
 function App() {
   const restoreAll = () => {

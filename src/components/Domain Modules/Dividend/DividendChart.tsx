@@ -9,9 +9,9 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { chartColors } from '../utils/chartColors';
-import { baseChartOptions } from '../utils/chartOptions';
-import type { Dividend } from '../utils/type';   // ✅ use shared type
+import { chartColors } from '../../../utils/Charts/chartColors';
+import { baseChartOptions } from '../../../utils/Charts/chartOptions';
+import type { Dividend } from '../../../types/type';   // ✅ use shared type
 
 ChartJS.register(
   CategoryScale,

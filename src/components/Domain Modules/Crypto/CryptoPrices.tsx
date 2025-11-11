@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
-import { fetchCryptoPrices } from '../utils/api';
-import { debounce } from '../utils/debounce';
-import Button from './Button';
+import { fetchCryptoPrices } from '../../../utils/Data & API/api';
+import { debounce } from '../../../utils/Infrastucture/debounce';
+import Button from '../../UI Primitives/Button';
 
 type Prices = { [key: string]: { usd: number } };
 

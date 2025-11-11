@@ -10,11 +10,11 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import Button from './Button';
-import { chartColors } from '../utils/chartColors';
-import { baseChartOptions } from '../utils/chartOptions';
-import { supabase } from '../utils/supabaseClient';
-import type { Holding, Dividend, CryptoHolding, PortfolioSnapshot } from '../utils/type';
+import Button from '../UI Primitives/Button';
+import { chartColors } from '../../utils/Charts/chartColors';
+import { baseChartOptions } from '../../utils/Charts/chartOptions';
+import { supabase } from '../../utils/Infrastucture/supabaseClient';
+import type { Holding, Dividend, CryptoHolding, PortfolioSnapshot } from '../../types/type';
 
 ChartJS.register(
   CategoryScale,
