@@ -12,7 +12,7 @@ import {
 import type { ConfirmFlags } from '../../../utils/Data & API/storage';
 import { fetchCryptoPrices } from '../../../utils/Data & API/api';
 import { HoldingRow } from './HoldingRow';
-import { debounce } from '../../../utils/Infrastucture/debounce';
+import { debounce } from '../../../utils/Infrastructure/debounce';
 import { isPositiveNumber } from '../../../utils/Data & API/validators';
 
 // ✅ Rename the type to avoid confusion with stock "Holding"

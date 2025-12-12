@@ -8,9 +8,9 @@ import { saveConfirmFlags, loadConfirmFlags } from '../../../utils/Data & API/st
 import type { ConfirmFlags } from '../../../utils/Data & API/storage';
 import { toNumberSafe } from '../../../utils/Math & Logic/calculations';
 import { isValidTicker, isPositiveNumber } from '../../../utils/Data & API/validators';
-import { debounce } from '../../../utils/Infrastucture/debounce';
+import { debounce } from '../../../utils/Infrastructure/debounce';
 import { StockRow } from './StockRow';
-import { supabase } from '../../../utils/Infrastucture/supabaseClient';
+import { supabase } from '../../../utils/Infrastructure/supabaseClient';
 
 // ✅ Import Holding from your shared types file
 import type { Holding } from '../../../types/type';

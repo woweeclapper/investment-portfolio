@@ -13,7 +13,7 @@ import {
 import Button from '../UI Primitives/Button';
 import { chartColors } from '../../utils/Charts/chartColors';
 import { baseChartOptions } from '../../utils/Charts/chartOptions';
-import { supabase } from '../../utils/Infrastucture/supabaseClient';
+import { supabase } from '../../utils/Infrastructure/supabaseClient';
 import type { Holding, Dividend, CryptoHolding, PortfolioSnapshot } from '../../types/type';
 
 ChartJS.register(

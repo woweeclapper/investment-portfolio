@@ -1,6 +1,6 @@
 // src/components/AuthGate.tsx
 import { useEffect, useState } from 'react';
-import { supabase } from '../../../utils/Infrastucture/supabaseClient';
+import { supabase } from '../../../utils/Infrastructure/supabaseClient';
 import type { Session } from '@supabase/supabase-js';
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
