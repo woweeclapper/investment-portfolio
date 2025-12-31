@@ -9,7 +9,7 @@ import DividendChart from './DividendChart';
 import Button from '../../UI Primitives/Button';
 import FormError from '../../Feedback & Safety/FormError';
 import { supabase } from '../../../utils/Infrastructure/supabaseClient';
-import type { Dividend } from '../../../types/type'; // ✅ single source of truth
+import type { Dividend } from '../../../types/type'; // single source of truth
 
 export default function DividendLogger() {
   const [dividends, setDividends] = useState<Dividend[]>([]);
