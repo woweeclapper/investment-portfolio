@@ -12,7 +12,7 @@ import { debounce } from '../../../utils/Infrastructure/debounce';
 import { StockRow } from './StockRow';
 import { supabase } from '../../../utils/Infrastructure/supabaseClient';
 
-// ✅ Import Holding from your shared types file
+// Import Holding from your shared types file
 import type { Holding } from '../../../types/type';
 
 type Prefs = {
@@ -44,9 +44,9 @@ export default function StockTracker() {
     () => loadConfirmFlags().stocks
   );
 
-  // 🔹 Load holdings from Supabase on mount
+  // Load holdings from Supabase on mount
   useEffect(() => {
-    // ✅ define the DB row type inside this effect (or at the top of the file if you prefer)
+    // define the DB row type inside this effect (or at the top of the file if you prefer)
     type HoldingRowDB = {
       id: string;
       ticker: string;
@@ -72,14 +72,14 @@ export default function StockTracker() {
         return;
       }
 
-      // ✅ normalize snake_case → camelCase and ensure currentPrice is number | null
+      // normalize snake_case → camelCase and ensure currentPrice is number | null
       // After supabase fetch
       const normalized: Holding[] = (data as HoldingRowDB[]).map((r) => ({
         id: r.id,
         ticker: r.ticker,
         shares: r.shares,
         buyPrice: r.buy_price,
-        currentPrice: r.currentPrice ?? undefined, // ✅ use undefined, not null
+        currentPrice: r.currentPrice ?? undefined, // use undefined, not null
       }));
 
       setStocks(normalized);
@@ -121,8 +121,7 @@ export default function StockTracker() {
       clearInterval(interval);
     };
   }, [tickers]);
-  ////////////////////////////////////////////////////////////////////////////////////
-  // Editing
+  
   const startEdit = (stock: Holding) => {
     setEditingId(stock.id);
     setTicker(stock.ticker);
@@ -248,7 +247,6 @@ export default function StockTracker() {
     setSkipConfirm(false);
   };
 
-  // ===== SECOND HALF =====
 
   // Memoized portfolio totals: value, cost basis, and P/L
   const totalValue = useMemo(() => {
@@ -272,7 +270,7 @@ export default function StockTracker() {
     );
   }, [stocks]);
 
-  // ✅ compute percentage separately
+  // compute percentage separately
   const totalPct = totalCostBasis > 0 ? (totalPL / totalCostBasis) * 100 : 0;
 
   return (
