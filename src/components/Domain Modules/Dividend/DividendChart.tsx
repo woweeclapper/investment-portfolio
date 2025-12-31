@@ -11,7 +11,7 @@ import {
 } from 'chart.js';
 import { chartColors } from '../../../utils/Charts/chartColors';
 import { baseChartOptions } from '../../../utils/Charts/chartOptions';
-import type { Dividend } from '../../../types/type';   // ✅ use shared type
+import type { Dividend } from '../../../types/type';   //use shared type
 
 ChartJS.register(
   CategoryScale,
