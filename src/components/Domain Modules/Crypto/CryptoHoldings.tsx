@@ -15,7 +15,7 @@ import { HoldingRow } from './HoldingRow';
 import { debounce } from '../../../utils/Infrastructure/debounce';
 import { isPositiveNumber } from '../../../utils/Data & API/validators';
 
-// ✅ Rename the type to avoid confusion with stock "Holding"
+// Rename the type to avoid confusion with stock "Holding"
 type CryptoHolding = {
   id: number;            // keep number for localStorage (Date.now())
   coin: string;          // e.g., "bitcoin"

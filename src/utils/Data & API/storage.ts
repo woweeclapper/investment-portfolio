@@ -1,6 +1,6 @@
 const CURRENT_VERSION = 2;
 
-// 🔹 Generic safe load
+//  Generic safe load
 export function loadData<T>(
   key: string,
   fallback: T,
@@ -20,13 +20,13 @@ export function loadData<T>(
   }
 }
 
-// 🔹 Generic safe save
+//  Generic safe save
 export function saveData<T>(key: string, data: T, version = CURRENT_VERSION) {
   localStorage.setItem(key, JSON.stringify({ _v: version, data }));
 }
 
 // ----------------------------------------------------
-// 🔹 Typed confirm flags (UI-only, not in Supabase)
+//  Typed confirm flags (UI-only, not in Supabase)
 // ----------------------------------------------------
 export type ConfirmFlags = {
   crypto: boolean;

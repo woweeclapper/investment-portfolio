@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// ✅ Use environment variables instead of hardcoding
+//  Use environment variables instead of hardcoding
 const FINNHUB_KEY = import.meta.env.VITE_FINNHUB_KEY;
 const FINNHUB_URL =
   import.meta.env.VITE_FINNHUB_URL || 'https://finnhub.io/api/v1';

@@ -149,7 +149,7 @@ export default function PortfolioPerformance() {
     loadAll();
   }, []);
 
-  // 🔹 Memoize current aggregate values used in snapshots (live arrays)
+  //  Memoize current aggregate values used in snapshots (live arrays)
   const stockValue = useMemo(() => {
     return stocks.reduce((sum, s) => sum + (s.currentPrice ?? 0) * s.shares, 0);
   }, [stocks]);
@@ -241,7 +241,7 @@ export default function PortfolioPerformance() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history, stocks, dividends, cryptoHoldings]);
 
-  // 🔹 Memoize monthly dividend totals
+  //  Memoize monthly dividend totals
   const { monthlyMap, monthOrder } = useMemo(() => {
     const map: Record<string, number> = {};
     const order: string[] = [];
@@ -261,7 +261,7 @@ export default function PortfolioPerformance() {
     return { monthlyMap: map, monthOrder: order };
   }, [dividends]);
 
-  // 🔹 Memoize chart datasets (guard monthly array lengths)
+  //  Memoize chart datasets (guard monthly array lengths)
   const chartData = useMemo(() => {
     const monthlyDividends = monthOrder.map((m) => monthlyMap[m] ?? 0);
 
@@ -316,7 +316,7 @@ export default function PortfolioPerformance() {
     },
   };
 
-  // 🔹 Memoize latest snapshot summary values
+  //  Memoize latest snapshot summary values
   const latestSummary = useMemo(() => {
     if (history.length === 0) return null;
     const latest = history[history.length - 1];
@@ -332,7 +332,7 @@ export default function PortfolioPerformance() {
     <div>
       <h2>Portfolio Performance</h2>
 
-      {/* 🔹 Latest snapshot summary with percentages */}
+      {/*  Latest snapshot summary with percentages */}
       {latestSummary && (
         <div
           style={{

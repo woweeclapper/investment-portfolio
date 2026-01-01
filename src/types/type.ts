@@ -15,7 +15,7 @@ export type Holding = {
   currentPrice?: number;
 };
 
-// ✅ New type for crypto holdings
+//  New type for crypto holdings
 export type CryptoHolding = {
   id: string;
   coin: string;

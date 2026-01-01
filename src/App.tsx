@@ -8,7 +8,7 @@ import { restoreAllConfirmations } from './utils/Data & API/storage';
 import Button from './components/UI Primitives/Button';
 import ErrorBoundary from './components/Feedback & Safety/ErrorBoundary';
 
-// 🔹 Import the AuthGate wrapper
+//  Import the AuthGate wrapper
 import AuthGate from './components/Domain Modules/Login/AuthGate';
 
 function App() {
@@ -24,7 +24,7 @@ function App() {
         Skip to main content
       </a>
 
-      {/* 🔹 Wrap the entire dashboard in AuthGate */}
+      {/*  Wrap the entire dashboard in AuthGate */}
       <AuthGate>
         <main>
           <h1 id="dashboard-title">Investment Dashboard</h1>

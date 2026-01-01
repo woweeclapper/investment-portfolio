@@ -30,7 +30,7 @@ export function sum(values: number[]): number {
   return values.reduce((a, b) => a + b, 0);
 }
 
-// 🔹 Optional: Dividend yield (annual dividends / current price)
+//  Optional: Dividend yield (annual dividends / current price)
 export function dividendYield(
   annualDividends: number,
   currentPrice: number
@@ -39,7 +39,7 @@ export function dividendYield(
   return (annualDividends / currentPrice) * 100;
 }
 
-// 🔹 Optional: Total return ((current + dividends - invested) / invested)
+//  Optional: Total return ((current + dividends - invested) / invested)
 export function totalReturn(
   invested: number,
   currentValue: number,

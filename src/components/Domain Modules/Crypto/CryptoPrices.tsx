@@ -27,7 +27,7 @@ export default function CryptoPrices() {
     localStorage.setItem('customCoins', JSON.stringify(customCoins));
   }, [customCoins]);
 
-  // 🔹 Build full watchlist dynamically
+  //  Build full watchlist dynamically
   const allCoins = useMemo(
     () => [...MAIN_COINS, ...SUPP_COINS, ...customCoins],
     [customCoins]

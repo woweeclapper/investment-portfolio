@@ -191,7 +191,7 @@ export default function StockTracker() {
             ticker: data.ticker,
             shares: data.shares,
             buyPrice: data.buy_price ?? data.buyPrice,
-            currentPrice: data.currentPrice ?? undefined, // ✅ use undefined, not null
+            currentPrice: data.currentPrice ?? undefined, //  use undefined, not null
           };
 
           setStocks((prev) => [...prev, inserted]);

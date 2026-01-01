@@ -21,10 +21,10 @@ export const COLORS = {
 export const COINS_MAIN = ['BTC', 'ETH'] as const;
 export const COINS_SUPP = ['SOL', 'ADA', 'AVAX', 'MATIC'] as const;
 
-// 🔹 Optional: unified export for all supported coins
+//  Optional: unified export for all supported coins
 export const SUPPORTED_COINS = [...COINS_MAIN, ...COINS_SUPP] as const;
 
-// 🔹 Optional: chart palette (ties directly to your chartColors.ts)
+//  Optional: chart palette (ties directly to  chartColors.ts)
 export const CHART_COLORS = {
   stocks: {
     border: 'rgba(54, 162, 235, 1)',
