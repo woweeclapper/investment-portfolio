@@ -12,7 +12,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* ✅ Added font size scale for consistency */
+  /*  Added font size scale for consistency */
   --font-size-sm: 14px;
   --font-size-base: 16px;
   --font-size-lg: 18px;
@@ -34,16 +34,16 @@ body {
   min-width: 320px;
   min-height: 100vh;
   font-size: var(--font-size-base);
-  /* ✅ consistent base font size */
+  /*  consistent base font size */
 }
 
 h1 {
   font-size: var(--font-size-xl);
-  /* ✅ use variable */
+  /*  use variable */
   line-height: 1.1;
 }
 
-/* ✅ Skip link utility */
+/*  Skip link utility */
 .skip-link {
   position: absolute;
   top: -40px;
@@ -62,7 +62,7 @@ h1 {
   /* slide into view when focused */
 }
 
-/* ✅ Visually hidden utility */
+/*  Visually hidden utility */
 .visually-hidden {
   position: absolute !important;
   width: 1px;
@@ -86,7 +86,7 @@ button:hover {
   border-color: #646cff;
 }
 
-/* ✅ Apply focus styles globally */
+/*  Apply focus styles globally */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -127,7 +127,7 @@ textarea:focus-visible {
 .app-button.muted {
   background-color: #6c757d;
   color: #fff;
-  /* ✅ ensure contrast */
+  /*  ensure contrast */
 }
 
 .app-button.muted:hover {

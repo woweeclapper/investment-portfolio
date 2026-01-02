@@ -19,7 +19,7 @@ function App() {
 
   return (
     <div className="App">
-      {/* ✅ Skip link for keyboard users */}
+      {/* Skip link for keyboard users */}
       <a href="#dashboard-title" className="skip-link">
         Skip to main content
       </a>
@@ -36,7 +36,7 @@ function App() {
             </Button>
           </div>
 
-          {/* ✅ Each module wrapped in ErrorBoundary */}
+          {/*  Each module wrapped in ErrorBoundary */}
           <ErrorBoundary>
             <section aria-labelledby="crypto-prices-title">
               <h2 id="crypto-prices-title" className="visually-hidden">
