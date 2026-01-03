@@ -24,16 +24,19 @@ export function HoldingRow({ holding, price, onRemove }: Props) {
 
   return (
     <li style={{ marginBottom: '0.5rem' }}>
-      {holding.coin.toUpperCase()} — {holding.amount} @ $
-      {holding.buyPrice.toFixed(2)} | Cost Basis: ${costBasis.toFixed(2)}
+      {holding.coin.toUpperCase()} — {holding.amount.toLocaleString()} @ $
+      {Number(holding.buyPrice.toFixed(2)).toLocaleString()} | Cost Basis: $
+      {costBasis.toLocaleString()} | Current: ${price?.toLocaleString()}
       {price != null && (
         <>
           {' '}
-          | Current: ${price.toFixed(2)} | Value: {currentValue?.toFixed(2)} |
-          P/L: {pl != null ? pl.toFixed(2) : '—'}
-          {pct != null && ` (${pct.toFixed(2)}%)`}
+          | Value: ${currentValue?.toLocaleString()} | P/L:{' '}
+          <span style={{ color: pl >= 0 ? 'green' : 'red' }}>
+            {pl != null ? pl.toLocaleString() : '—'}
+            {pct != null && ` (${pct.toLocaleString()}%)`}
+          </span>
         </>
-      )}{' '}
+      )}
       <Button
         variant="danger"
         onClick={() => onRemove(holding.id)}

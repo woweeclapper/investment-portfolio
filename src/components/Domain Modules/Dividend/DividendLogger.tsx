@@ -1,6 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
-import { formatCurrency, formatDate } from '../../../utils/Math & Logic/formatters';
-import { saveConfirmFlags, loadConfirmFlags } from '../../../utils/Data & API/storage';
+import {
+  formatCurrency,
+  formatDate,
+} from '../../../utils/Math & Logic/formatters';
+import {
+  saveConfirmFlags,
+  loadConfirmFlags,
+} from '../../../utils/Data & API/storage';
 import type { ConfirmFlags } from '../../../utils/Data & API/storage';
 import { toNumberSafe } from '../../../utils/Math & Logic/calculations';
 import ConfirmModal from '../../Feedback & Safety/ConfirmModal';

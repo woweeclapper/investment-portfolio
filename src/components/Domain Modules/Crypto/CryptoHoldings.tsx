@@ -17,8 +17,8 @@ import { isPositiveNumber } from '../../../utils/Data & API/validators';
 
 // Rename the type to avoid confusion with stock "Holding"
 type CryptoHolding = {
-  id: number;            // keep number for localStorage (Date.now())
-  coin: string;          // e.g., "bitcoin"
+  id: number; // keep number for localStorage (Date.now())
+  coin: string; // e.g., "bitcoin"
   amount: number;
   buyPrice: number;
   currentPrice?: number;
@@ -128,7 +128,14 @@ export default function CryptoHoldings() {
 
   return (
     <div>
-      <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <h2
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          justifyContent: 'center',
+        }}
+      >
         Crypto Holdings
         {skipConfirm && <Badge label="Confirmations off" tone="danger" />}
       </h2>

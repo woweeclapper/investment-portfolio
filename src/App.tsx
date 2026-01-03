@@ -37,23 +37,25 @@ function App() {
           </div>
 
           {/*  Each module wrapped in ErrorBoundary */}
-          <ErrorBoundary>
-            <section aria-labelledby="crypto-prices-title">
-              <h2 id="crypto-prices-title" className="visually-hidden">
-                Crypto Prices
-              </h2>
-              <CryptoPrices />
-            </section>
-          </ErrorBoundary>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <ErrorBoundary>
+              <section aria-labelledby="crypto-prices-title">
+                <h2 id="crypto-prices-title" className="visually-hidden">
+                  Crypto Prices
+                </h2>
+                <CryptoPrices />
+              </section>
+            </ErrorBoundary>
 
-          <ErrorBoundary>
-            <section aria-labelledby="crypto-holdings-title">
-              <h2 id="crypto-holdings-title" className="visually-hidden">
-                Crypto Holdings
-              </h2>
-              <CryptoHoldings />
-            </section>
-          </ErrorBoundary>
+            <ErrorBoundary>
+              <section aria-labelledby="crypto-holdings-title">
+                <h2 id="crypto-holdings-title" className="visually-hidden">
+                  Crypto Holdings
+                </h2>
+                <CryptoHoldings />
+              </section>
+            </ErrorBoundary>
+          </div>
 
           <ErrorBoundary>
             <section aria-labelledby="stock-tracker-title">

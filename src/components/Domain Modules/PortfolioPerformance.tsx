@@ -14,7 +14,12 @@ import Button from '../UI Primitives/Button';
 import { chartColors } from '../../utils/Charts/chartColors';
 import { baseChartOptions } from '../../utils/Charts/chartOptions';
 import { supabase } from '../../utils/Infrastructure/supabaseClient';
-import type { Holding, Dividend, CryptoHolding, PortfolioSnapshot } from '../../types/type';
+import type {
+  Holding,
+  Dividend,
+  CryptoHolding,
+  PortfolioSnapshot,
+} from '../../types/type';
 
 ChartJS.register(
   CategoryScale,
@@ -39,7 +44,9 @@ export default function PortfolioPerformance() {
   // Load live data + snapshots from Supabase on mount
   useEffect(() => {
     const loadAll = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       // Stocks
@@ -116,7 +123,8 @@ export default function PortfolioPerformance() {
             currentPrice: r.currentPrice,
           }))
         );
-      } else if (cryptoErr) console.error('Failed to load crypto holdings', cryptoErr);
+      } else if (cryptoErr)
+        console.error('Failed to load crypto holdings', cryptoErr);
 
       // Snapshots
       type PortfolioHistoryRowDB = {
@@ -143,7 +151,8 @@ export default function PortfolioPerformance() {
             dividends: r.dividends,
           }))
         );
-      } else if (snapErr) console.error('Failed to load portfolio history', snapErr);
+      } else if (snapErr)
+        console.error('Failed to load portfolio history', snapErr);
     };
 
     loadAll();
@@ -175,7 +184,9 @@ export default function PortfolioPerformance() {
 
     if (history.find((h) => h.date === today)) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
     const { data, error } = await supabase

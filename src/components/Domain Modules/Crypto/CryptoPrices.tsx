@@ -87,7 +87,7 @@ export default function CryptoPrices() {
         key={symbol}
         style={{
           display: 'flex',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
           alignItems: 'center',
           gap: '0.5rem',
         }}
@@ -122,17 +122,17 @@ export default function CryptoPrices() {
 
   return (
     <div>
-      <h2>Crypto Prices</h2>
+      <h2 className="crypto-title">Crypto Prices</h2>
 
       {loading && <p style={{ color: '#9aa4ad' }}>Loading latest prices…</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {!loading && !error && (
         <>
-          <h3>Main Watchlist</h3>
+          <h3 className="crypto-title">Main Watchlist</h3>
           {MAIN_COINS.map((c) => renderPrice(c, c.toUpperCase().slice(0, 3)))}
 
-          <h3>Supplementary</h3>
+          <h3 className="crypto-title">Supplementary</h3>
           {SUPP_COINS.map((c) => {
             const label =
               c === 'ripple'
@@ -149,7 +149,7 @@ export default function CryptoPrices() {
 
           {customCoins.length > 0 && (
             <>
-              <h3>Custom Watchlist</h3>
+              <h3 className="crypto-title">Custom Watchlist</h3>
               {customCoins.map((c) => renderPrice(c, c.toUpperCase(), true))}
             </>
           )}
@@ -157,7 +157,7 @@ export default function CryptoPrices() {
       )}
 
       {/* Add new coin input */}
-      <div style={{ marginTop: '0.75rem' }}>
+      <div style={{ marginTop: '0.75rem', textAlign: 'left' }}>
         <input
           type="text"
           placeholder="Add coin (e.g. cardano)"
@@ -171,7 +171,7 @@ export default function CryptoPrices() {
       </div>
 
       {/* Manual refresh button */}
-      <div style={{ marginTop: '0.75rem' }}>
+      <div style={{ marginTop: '0.75rem', textAlign: 'left' }}>
         <Button variant="muted" onClick={debouncedLoad}>
           Refresh Now
         </Button>

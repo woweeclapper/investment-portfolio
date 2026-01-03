@@ -79,7 +79,9 @@ h1 {
 button {
   cursor: pointer;
   font-family: inherit;
-  transition: border-color 0.25s, outline 0.25s;
+  transition:
+    border-color 0.25s,
+    outline 0.25s;
 }
 
 button:hover {

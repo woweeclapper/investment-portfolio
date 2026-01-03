@@ -17,24 +17,29 @@ This project emphasizes **clarity**, **modularity**, and **safety nets** — eve
 ## 🧩 Core Modules
 
 ### 📈 CryptoPrices
+
 - Live feed for primary and supplementary coins
 - Debounced API calls with loading/error states
 
 ### 🪙 CryptoHoldings
+
 - Track buy price, current price, value, and P/L
 - Confirmation modal with “Don’t ask again” logic
 - Per‑module restore button
 
 ### 📊 StockTracker
+
 - Manage stock positions with confirm logic
 - Inline validation for amount and date
 
 ### 💸 DividendLogger
+
 - Log dividend income with monthly summaries
 - Integrated chart visualization
 - Persistent confirmation flags
 
 ### 📊 PortfolioPerformance
+
 - Unified view of portfolio growth across crypto, stocks, and dividends
 - Memoized aggregates for performance
 
@@ -42,17 +47,17 @@ This project emphasizes **clarity**, **modularity**, and **safety nets** — eve
 
 ## 🛠️ Utilities
 
-- `storage.ts` — Local persistence for holdings and confirm flags  
-- `formatters.ts` — Consistent currency and date formatting  
-- `api.ts` — Fetch live crypto prices from CoinGecko & stock prices from Finnhub  
+- `storage.ts` — Local persistence for holdings and confirm flags
+- `formatters.ts` — Consistent currency and date formatting
+- `api.ts` — Fetch live crypto prices from CoinGecko & stock prices from Finnhub
 - `ConfirmModal.tsx` — Reusable modal with dark styling, “Don’t ask again,” and restore logic
 
 ---
 
 ## 🛡️ Safety Nets
 
-- **Confirmation Modals** — Prevent accidental deletions  
-- **Per‑Module Restore** — Re‑enable confirmations inside each module  
+- **Confirmation Modals** — Prevent accidental deletions
+- **Per‑Module Restore** — Re‑enable confirmations inside each module
 - **Global Restore** — Reset all confirmations from the dashboard header
 
 ---
@@ -60,10 +65,12 @@ This project emphasizes **clarity**, **modularity**, and **safety nets** — eve
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (≥ 18)
 - npm or yarn
 
 ### Installation
+
 ```bash
 git clone https://github.com/your-username/investment-dashboard.git
 cd investment-dashboard
@@ -77,19 +84,20 @@ UI Primitives: badge, button
 Feedback & Safety: confirmmodal, errorboundary, formerror
 Domain Modules:
     Crypto: cryptoholding, cryptoprices, holdingrow
-    Dividend: dividendchart, dividendlogger 
+    Dividend: dividendchart, dividendlogger
     Stock: stockrow, stocktracker
     portfolioperformance
-    Login: Authgate 
+    Login: Authgate
 
 Hooks
-usePositionMetric → custom logic for portfolio/holding calculations. 
+usePositionMetric → custom logic for portfolio/holding calculations.
 
 Types
-    types: shared type definitions for domain 
+    types: shared type definitions for domain
 
 Utils
 Data & API: api, storage, validator
 Math & Logic: calculation, formatter
 Charts: chartcolors, chartoptions
 Infra: constants, debounce, supabaseClient
+```

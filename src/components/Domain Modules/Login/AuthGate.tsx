@@ -30,7 +30,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!session) {
     return (
-      <div style={{ maxWidth: 360, margin: '4rem auto' }}>
+      <div style={{ maxWidth: 420, margin: '4rem auto' }}>
         <h2>Private Dashboard</h2>
         <form
           onSubmit={async (e) => {
@@ -68,7 +68,13 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginBottom: '1rem',
+        }}
+      >
         <span style={{ fontSize: '0.9rem', color: '#555' }}>
           Logged in as <strong>{session.user.email}</strong>
         </span>

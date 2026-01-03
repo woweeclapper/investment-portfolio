@@ -1,6 +1,5 @@
 // src/components/FormError.tsx
 
-
 type Props = {
   message?: string;
   id?: string; // optional id so inputs can reference this error

@@ -4,10 +4,16 @@ import Badge from '../../UI Primitives/Badge';
 import Button from '../../UI Primitives/Button';
 import FormError from '../../Feedback & Safety/FormError';
 import { fetchStockPrice } from '../../../utils/Data & API/api';
-import { saveConfirmFlags, loadConfirmFlags } from '../../../utils/Data & API/storage';
+import {
+  saveConfirmFlags,
+  loadConfirmFlags,
+} from '../../../utils/Data & API/storage';
 import type { ConfirmFlags } from '../../../utils/Data & API/storage';
 import { toNumberSafe } from '../../../utils/Math & Logic/calculations';
-import { isValidTicker, isPositiveNumber } from '../../../utils/Data & API/validators';
+import {
+  isValidTicker,
+  isPositiveNumber,
+} from '../../../utils/Data & API/validators';
 import { debounce } from '../../../utils/Infrastructure/debounce';
 import { StockRow } from './StockRow';
 import { supabase } from '../../../utils/Infrastructure/supabaseClient';
@@ -95,7 +101,6 @@ export default function StockTracker() {
   }, [skipConfirm]);
 
   // Fetch current prices initially and every 5 minutes
-  const tickers = stocks.map((s) => s.ticker).join(',');
   useEffect(() => {
     if (stocks.length === 0) return;
     let canceled = false;
@@ -120,7 +125,7 @@ export default function StockTracker() {
       canceled = true;
       clearInterval(interval);
     };
-  }, [tickers]);
+  }, [stocks]);
   
   const startEdit = (stock: Holding) => {
     setEditingId(stock.id);
@@ -247,7 +252,6 @@ export default function StockTracker() {
     setSkipConfirm(false);
   };
 
-
   // Memoized portfolio totals: value, cost basis, and P/L
   const totalValue = useMemo(() => {
     return stocks.reduce((sum, s) => {
@@ -370,10 +374,12 @@ export default function StockTracker() {
       <div style={{ marginTop: '0.75rem' }}>
         <strong>Total Value:</strong> $
         {totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })} |{' '}
-        <strong>Total Cost Basis:</strong> ${totalCostBasis.toFixed(2)} |{' '}
+        <strong>Total Cost Basis:</strong> $
+        {Number(totalCostBasis.toFixed(2)).toLocaleString()} |{' '}
         <strong>P/L:</strong>{' '}
         <span style={{ color: totalPL >= 0 ? 'green' : 'red' }}>
-          ${totalPL.toFixed(2)} ({totalPct.toFixed(2)}%)
+          {Number(totalPL.toFixed(2)).toLocaleString()}(
+          {Number(totalPct.toFixed(2)).toLocaleString()}%)
         </span>
       </div>
 
