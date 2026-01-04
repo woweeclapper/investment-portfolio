@@ -277,14 +277,19 @@ export default function StockTracker() {
   // compute percentage separately
   const totalPct = totalCostBasis > 0 ? (totalPL / totalCostBasis) * 100 : 0;
 
+
+//make it so a new holding added to an existing stocks adds to the amount instead of creating a new entry
+//the math would be adding the holding together and averaging the buy price to update the cost basis
   return (
     <div>
-      <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
         Stock Tracker
         {skipConfirm && <Badge label="Confirmations off" tone="danger" />}
       </h2>
 
       {/* Form */}
+
+
       <div
         style={{
           display: 'flex',
@@ -319,6 +324,7 @@ export default function StockTracker() {
           )}
         </div>
 
+
         <div>
           <input
             type="number"
@@ -334,7 +340,7 @@ export default function StockTracker() {
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignContent: 'center', justifyContent: 'center' }}>
           <Button onClick={addOrUpdateStock} disabled={!isValidForm}>
             {editingId ? 'Update' : 'Add'}
           </Button>

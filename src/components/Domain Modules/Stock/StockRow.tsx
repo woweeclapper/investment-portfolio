@@ -15,10 +15,12 @@ export function StockRow({ stock, onEdit, onRemove }: Props) {
     currentPrice: stock.currentPrice,
   });
 
+  const shareLabel = stock.shares <= 1 ? 'share' : 'shares';
+
   return (
     <li style={{ marginBottom: '0.5rem' }}>
-      <strong>{stock.ticker}</strong> —{Number(stock.shares).toLocaleString()}{' '}
-      shares @ ${Number(stock.buyPrice.toFixed(2)).toLocaleString()}| Cost
+      <strong>{stock.ticker}</strong> — {Number(stock.shares).toLocaleString()}{' '}
+      {shareLabel} @ ${Number(stock.buyPrice.toFixed(2)).toLocaleString()}| Cost
       Basis: ${Number(costBasis.toFixed(2)).toLocaleString()} | Current:{' '}
       {stock.currentPrice !== undefined
         ? `$${Number(stock.currentPrice.toFixed(2)).toLocaleString()}`

@@ -126,6 +126,9 @@ export default function CryptoHoldings() {
     }, 0);
   }, [holdings, prices]);
 
+//make it so a new holding added to an existing coin adds to the amount instead of creating a new entry
+//the math would be adding the holding together and and update the cost basis
+
   return (
     <div>
       <h2
@@ -176,6 +179,7 @@ export default function CryptoHoldings() {
         </div>
 
         <div>
+          
           <input
             type="number"
             placeholder="Buy Price (optional)"
@@ -216,7 +220,7 @@ export default function CryptoHoldings() {
           ))}
         </ul>
       )}
-
+{/* check total value math and rendered output */}
       <div style={{ marginTop: 12 }}>
         <strong>Total Value:</strong> $
         {totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}

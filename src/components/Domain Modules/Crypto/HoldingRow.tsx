@@ -22,15 +22,17 @@ export function HoldingRow({ holding, price, onRemove }: Props) {
     currentPrice: price,
   });
 
+  const assetLabel = holding.amount <= 1 ? 'asset' : 'assets';
+
   return (
     <li style={{ marginBottom: '0.5rem' }}>
-      {holding.coin.toUpperCase()} — {holding.amount.toLocaleString()} @ $
+      <strong>{holding.coin.toUpperCase()}</strong> — {holding.amount.toLocaleString()} {assetLabel} @ $
       {Number(holding.buyPrice.toFixed(2)).toLocaleString()} | Cost Basis: $
       {costBasis.toLocaleString()} | Current: ${price?.toLocaleString()}
       {price != null && (
         <>
           {' '}
-          | Value: ${currentValue?.toLocaleString()} | P/L:{' '}
+          | Value: ${Number(currentValue.toFixed(2)).toLocaleString()} | Value: ${currentValue?.toLocaleString()} | P/L:{' '}
           <span style={{ color: pl >= 0 ? 'green' : 'red' }}>
             {pl != null ? pl.toLocaleString() : '—'}
             {pct != null && ` (${pct.toLocaleString()}%)`}
