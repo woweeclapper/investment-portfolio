@@ -1,18 +1,11 @@
 import Button from '../../UI Primitives/Button';
 import { usePositionMetrics } from '../../../hooks/usePositionMetrics';
-
-type Holding = {
-  id: number;
-  coin: string;
-  amount: number;
-  buyPrice: number;
-  currentPrice?: number;
-};
+import type { CryptoHolding } from '../../../types/type';
 
 type Props = {
-  holding: Holding;
+  holding: CryptoHolding;
   price: number | null;
-  onRemove: (id: number) => void;
+  onRemove: (id: string) => void;
 };
 
 export function HoldingRow({ holding, price, onRemove }: Props) {

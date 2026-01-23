@@ -4,8 +4,6 @@ import Badge from '../../UI Primitives/Badge';
 import Button from '../../UI Primitives/Button';
 import FormError from '../../Feedback & Safety/FormError';
 import {
-  saveData,
-  loadData,
   saveConfirmFlags,
   loadConfirmFlags,
 } from '../../../utils/Data & API/storage';
@@ -14,20 +12,11 @@ import { fetchCryptoPrices } from '../../../utils/Data & API/api';
 import { HoldingRow } from './HoldingRow';
 import { debounce } from '../../../utils/Infrastructure/debounce';
 import { isPositiveNumber } from '../../../utils/Data & API/validators';
-
-// Rename the type to avoid confusion with stock "Holding"
-type CryptoHolding = {
-  id: number; // keep number for localStorage (Date.now())
-  coin: string; // e.g., "bitcoin"
-  amount: number;
-  buyPrice: number;
-  currentPrice?: number;
-};
+import { supabase } from '../../../utils/Infrastructure/supabaseClient';
+import type { CryptoHolding } from '../../../types/type';
 
 export default function CryptoHoldings() {
-  const [holdings, setHoldings] = useState<CryptoHolding[]>(() =>
-    loadData<CryptoHolding[]>('cryptoHoldings', [])
-  );
+  const [holdings, setHoldings] = useState<CryptoHolding[]>([]);
   const [prices, setPrices] = useState<Record<string, { usd: number }>>({});
   const [coin, setCoin] = useState('bitcoin');
   const [amount, setAmount] = useState('');
@@ -37,7 +26,7 @@ export default function CryptoHoldings() {
   const [error, setError] = useState<string | null>(null);
 
   // Confirmation modal state
-  const [confirmId, setConfirmId] = useState<number | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [skipConfirm, setSkipConfirm] = useState<boolean>(
     () => loadConfirmFlags().crypto
   );
@@ -48,10 +37,48 @@ export default function CryptoHoldings() {
     saveConfirmFlags({ ...flags, crypto: skipConfirm });
   }, [skipConfirm]);
 
-  // Persist holdings
+  // Load holdings from Supabase on mount
   useEffect(() => {
-    saveData('cryptoHoldings', holdings);
-  }, [holdings]);
+    const fetchHoldings = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      type CryptoHoldingRowDB = {
+        id: string;
+        user_id: string;
+        coin: string;
+        amount: number;
+        buy_price: number;
+        currentPrice?: number;
+      };
+
+      const { data, error } = await supabase
+        .from('crypto_holdings')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('coin');
+
+      if (error) {
+        console.error('Failed to load crypto holdings', error);
+        return;
+      }
+
+      // Normalize snake_case → camelCase
+      const normalized: CryptoHolding[] = (data as CryptoHoldingRowDB[]).map((r) => ({
+        id: r.id,
+        coin: r.coin,
+        amount: r.amount,
+        buyPrice: r.buy_price,
+        currentPrice: r.currentPrice ?? undefined,
+      }));
+
+      setHoldings(normalized);
+    };
+
+    fetchHoldings();
+  }, []);
 
   // Debounced fetch for live prices
   const debouncedLoad = useMemo(
@@ -85,35 +112,68 @@ export default function CryptoHoldings() {
     return () => clearInterval(interval);
   }, [debouncedLoad]);
 
-  const addHolding = () => {
+  const addHolding = async () => {
     const amt = parseFloat(amount);
     const bp = parseFloat(buyPrice) || 0;
     if (!coin || !Number.isFinite(amt) || amt <= 0) return;
 
-    const newHolding: CryptoHolding = {
-      id: Date.now(),
-      coin,
-      amount: amt,
-      buyPrice: bp,
-      currentPrice: prices[coin]?.usd ?? undefined,
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('crypto_holdings')
+      .insert([
+        {
+          user_id: user.id,
+          coin,
+          amount: amt,
+          buy_price: bp,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Failed to add crypto holding', error);
+      return;
+    }
+
+    // Normalize returned row to CryptoHolding shape
+    const inserted: CryptoHolding = {
+      id: data.id,
+      coin: data.coin,
+      amount: data.amount,
+      buyPrice: data.buy_price,
+      currentPrice: prices[data.coin]?.usd ?? undefined,
     };
 
-    setHoldings((prev) => [...prev, newHolding]);
+    setHoldings((prev) => [...prev, inserted]);
     setAmount('');
     setBuyPrice('');
   };
 
-  const removeHolding = (id: number) => {
+  const removeHolding = (id: string) => {
     if (skipConfirm) {
-      setHoldings((prev) => prev.filter((h) => h.id !== id));
+      doRemove(id);
     } else {
       setConfirmId(id);
     }
   };
 
+  const doRemove = async (id: string) => {
+    const { error } = await supabase.from('crypto_holdings').delete().eq('id', id);
+    if (error) {
+      console.error('Failed to remove crypto holding', error);
+      return;
+    }
+    setHoldings((prev) => prev.filter((h) => h.id !== id));
+  };
+
   const confirmRemove = (dontAskAgain: boolean) => {
     if (confirmId != null) {
-      setHoldings((prev) => prev.filter((h) => h.id !== confirmId));
+      doRemove(confirmId);
       setConfirmId(null);
       if (dontAskAgain) setSkipConfirm(true);
     }

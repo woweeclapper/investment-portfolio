@@ -18,7 +18,7 @@ import { debounce } from '../../../utils/Infrastructure/debounce';
 import { StockRow } from './StockRow';
 import { supabase } from '../../../utils/Infrastructure/supabaseClient';
 
-// Import Holding from your shared types file
+// Import Holding from shared types file
 import type { Holding } from '../../../types/type';
 
 type Prefs = {
