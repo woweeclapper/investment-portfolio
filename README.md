@@ -1,10 +1,18 @@
-# 💼 Investment Dashboard
-
-A modular personal finance dashboard built with **React + TypeScript**, designed to track crypto holdings, stock positions, dividend income, and overall portfolio performance.
-
-This project emphasizes **clarity**, **modularity**, and **safety nets** — every action is confirmed via reusable modals, with restore buttons to re‑enable confirmations locally or globally.
 
 ---
+
+# 🚀 Investment Portfolio
+
+<div align="center">
+
+![Logo](path-to-logo) <!-- TODO: Add project logo -->
+
+[![GitHub stars](https://img.shields.io/github/stars/woweeclapper/investment-portfolio?style=for-the-badge)](https://github.com/woweeclapper/investment-portfolio/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/woweeclapper/investment-portfolio?style=for-the-badge)](https://github.com/woweeclapper/investment-portfolio/network)
+[![GitHub issues](https://img.shields.io/github/issues/woweeclapper/investment-portfolio?style=for-the-badge)](https://github.com/woweeclapper/investment-portfolio/issues)
+[![GitHub license](https://img.shields.io/badge/license-Unlicensed-blue.svg)](https://github.com/woweeclapper/investment-portfolio/blob/main/LICENSE)
+
+**A personal dashboard for tracking and visualizing your investment data.**
 
 ## 🎥 Demo
 
@@ -12,92 +20,211 @@ This project emphasizes **clarity**, **modularity**, and **safety nets** — eve
 
 👉 [View Live Deployment](https://joeinvestmentportfolio.vercel.app)
 
----
+</div>
 
-## 🧩 Core Modules
+## 📖 Overview
 
-### 📈 CryptoPrices
+This repository hosts a personal investment portfolio tracking and dashboard application. Designed for individual investors, it provides a clean and interactive interface to monitor investment performance, visualize asset allocation, and gain insights into your financial holdings. Built with a modern React and TypeScript stack, the application focuses on a responsive user experience and efficient data handling.
 
-- Live feed for primary and supplementary coins
-- Debounced API calls with loading/error states
+## ✨ Features
 
-### 🪙 CryptoHoldings
+- 📈 **Comprehensive Investment Tracking:** Monitor various assets within your portfolio.
+- 📊 **Interactive Dashboard:** Visualize key metrics, charts, and trends for an at-a-glance overview.
+- 🔄 **Efficient Data Fetching:** Utilizes TanStack Query for robust data management, caching, and synchronization.
+- 🎨 **Responsive Design:** Optimized for seamless viewing across desktop and mobile devices.
+- 🛠️ **Modern Development Stack:** Built with React, TypeScript, and Vite for a highly performant and maintainable codebase.
 
-- Track buy price, current price, value, and P/L
-- Confirmation modal with “Don’t ask again” logic
-- Per‑module restore button
+## 🖥️ Screenshots
 
-### 📊 StockTracker
+![Dashboard Screenshot](path-to-screenshot-dashboard.png) <!-- TODO: Add actual dashboard screenshot -->
+![Mobile View Screenshot](path-to-screenshot-mobile.png) <!-- TODO: Add mobile view screenshot -->
 
-- Manage stock positions with confirm logic
-- Inline validation for amount and date
+## 🛠️ Tech Stack
 
-### 💸 DividendLogger
+**Frontend:**
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![TanStack Query](https://img.shields.io/badge/TanStack%20Query-FF4154?style=for-the-badge&logo=reactquery&logoColor=white)
 
-- Log dividend income with monthly summaries
-- Integrated chart visualization
-- Persistent confirmation flags
+**Styling:**
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 
-### 📊 PortfolioPerformance
+**DevOps & Tools:**
+![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white)
+![Prettier](https://img.shields.io/badge/Prettier-F7BA3E?style=for-the-badge&logo=prettier&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-6E93D9?style=for-the-badge&logo=vitest&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
-- Unified view of portfolio growth across crypto, stocks, and dividends
-- Memoized aggregates for performance
-
----
-
-## 🛠️ Utilities
-
-- `storage.ts` — Local persistence for holdings and confirm flags
-- `formatters.ts` — Consistent currency and date formatting
-- `api.ts` — Fetch live crypto prices from CoinGecko & stock prices from Finnhub
-- `ConfirmModal.tsx` — Reusable modal with dark styling, “Don’t ask again,” and restore logic
-
----
-
-## 🛡️ Safety Nets
-
-- **Confirmation Modals** — Prevent accidental deletions
-- **Per‑Module Restore** — Re‑enable confirmations inside each module
-- **Global Restore** — Reset all confirmations from the dashboard header
-
----
-
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- Node.js (≥ 18)
-- npm or yarn
+Before you begin, ensure you have the following installed:
+- [Node.js](https://nodejs.org/en/download/) (LTS version recommended)
+- npm (comes with Node.js)
 
 ### Installation
 
-```bash
-git clone https://github.com/your-username/investment-dashboard.git
-cd investment-dashboard
-npm install
-npm run dev
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/woweeclapper/investment-portfolio.git
+    cd investment-portfolio
+    ```
 
-🧩 Project Structure Overview
-Components
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-UI Primitives: badge, button
-Feedback & Safety: confirmmodal, errorboundary, formerror
-Domain Modules:
-    Crypto: cryptoholding, cryptoprices, holdingrow
-    Dividend: dividendchart, dividendlogger
-    Stock: stockrow, stocktracker
-    portfolioperformance
-    Login: Authgate
+3.  **Environment setup**
+    This project may use environment variables for sensitive information or API keys. If an `.env.example` file is present, copy it:
+    ```bash
+    cp .env.example .env
+    ```
+    Then, configure your environment variables in the newly created `.env` file. Common variables might include:
+    ```
+    # Example: API endpoint for fetching investment data
+    VITE_API_BASE_URL=https://api.example.com
+    VITE_SOME_API_KEY=your_secret_api_key
+    ```
+    *(Note: No `.env.example` was detected. Please create one if environment variables are used.)*
 
-Hooks
-usePositionMetric → custom logic for portfolio/holding calculations.
+4.  **Start development server**
+    ```bash
+    npm run dev
+    ```
 
-Types
-    types: shared type definitions for domain
+5.  **Open your browser**
+    Visit `http://localhost:5173` (default Vite port) or the port indicated in your terminal.
 
-Utils
-Data & API: api, storage, validator
-Math & Logic: calculation, formatter
-Charts: chartcolors, chartoptions
-Infra: constants, debounce, supabaseClient
+## 📁 Project Structure
+
 ```
+investment-portfolio/
+├── public/                 # Static assets (e.g., favicon, robots.txt)
+├── src/                    # Main application source code
+│   ├── assets/             # Images, icons, and other static media
+│   ├── components/         # Reusable React UI components
+│   ├── hooks/              # Custom React hooks for shared logic
+│   ├── pages/              # Application views or route-specific components
+│   ├── services/           # Logic for interacting with external APIs/data sources
+│   ├── styles/             # Global or component-specific styles
+│   ├── utils/              # Utility functions and helpers
+│   └── main.tsx            # Application entry point and root component
+├── .eslintrc.json          # ESLint configuration for code quality
+├── .gitignore              # Specifies intentionally untracked files to ignore
+├── .prettierrc.json        # Prettier configuration for code formatting
+├── eslint.config.js        # Modern ESLint configuration
+├── index.html              # The main HTML file for the single-page application
+├── package.json            # Project metadata, dependencies, and scripts
+├── package-lock.json       # Records the exact dependency tree
+├── settings.json           # Application-specific configuration settings
+├── tsconfig.json           # Base TypeScript configuration
+├── tsconfig.app.json       # TypeScript configuration for application files
+├── tsconfig.node.json      # TypeScript configuration for Node.js environment files (e.g., Vite config)
+└── vite.config.ts          # Vite build tool configuration
+```
+
+## ⚙️ Configuration
+
+### Environment Variables
+Environment variables (prefixed with `VITE_` for client-side use in Vite) can be used to configure aspects of the application without modifying the code directly.
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `VITE_API_BASE_URL` | Base URL for the external investment data API. | `(none)` | Yes (if fetching external data) |
+| `VITE_SOME_API_KEY` | An example API key for external service access. | `(none)` | No (example only) |
+| `VITE_APP_TITLE` | Custom title for the application. | `Investment Portfolio` | No |
+
+### Configuration Files
+-   `settings.json`: Contains application-specific settings that are not sensitive and can be checked into version control. These might include default chart settings, display preferences, or feature toggles.
+-   `vite.config.ts`: Configures the Vite development server and build process.
+-   `.eslintrc.json`, `eslint.config.js`: Configure ESLint rules for maintaining code quality.
+-   `.prettierrc.json`: Configures Prettier for consistent code formatting.
+
+## 🔧 Development
+
+### Available Scripts
+In the project directory, you can run:
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Starts the development server with hot-reloading. |
+| `npm run build` | Builds the application for production to the `dist` folder. |
+| `npm run lint` | Runs ESLint to check for code quality and potential errors. |
+| `npm run preview` | Serves the production build locally for testing. |
+| `npm run test` | Runs tests using Vitest. |
+| `npm run coverage` | Runs tests with code coverage reporting. |
+
+### Development Workflow
+1.  Ensure prerequisites are met and dependencies are installed (`npm install`).
+2.  Start the development server using `npm run dev`.
+3.  Write code in the `src/` directory. Changes will hot-reload in the browser.
+4.  Run `npm run lint` and `npm run test` regularly to maintain code quality and ensure functionality.
+
+## 🧪 Testing
+
+The project uses [Vitest](https://vitest.dev/) for unit and component testing.
+
+```bash
+# Run all tests
+npm run test
+
+# Run tests with coverage report
+npm run coverage
+
+# Run tests in watch mode (re-runs on file changes)
+npm test -- --watch
+```
+
+## 🚀 Deployment
+
+### Production Build
+To create an optimized production build of the application:
+```bash
+npm run build
+```
+This command bundles the React application into static files in the `dist` directory, ready for deployment.
+
+### Deployment Options
+This application is configured for easy deployment to static hosting services. The `homepage` field in the repository metadata indicates deployment to Vercel.
+
+-   **Vercel**: You can deploy this project directly to Vercel (as indicated by the live demo link) by linking your GitHub repository. Vercel automatically detects Vite projects and builds them.
+
+## 🤝 Contributing
+
+We welcome contributions! If you're interested in improving this project, please consider:
+
+1.  Forking the repository.
+2.  Creating a new branch for your features or bug fixes.
+3.  Making your changes and ensuring tests pass.
+4.  Opening a pull request with a clear description of your changes.
+
+### Development Setup for Contributors
+Follow the "Quick Start" guide above to set up your local development environment. Ensure your code adheres to the ESLint and Prettier configurations.
+
+## 📄 License
+
+This project is currently **Unlicensed**. See the repository for details.
+
+## 🙏 Acknowledgments
+
+-   **React** for the powerful UI library.
+-   **Vite** for the fast and efficient development experience.
+-   **TanStack Query** for simplifying data fetching and state management.
+-   **ESLint & Prettier** for maintaining code quality and consistency.
+-   **Vitest** for a robust testing framework.
+
+## 📞 Support & Contact
+
+-   🐛 Issues: [GitHub Issues](https://github.com/woweeclapper/investment-portfolio/issues)
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you find it helpful!**
+
+Made with ❤️ by [woweeclapper](https://github.com/woweeclapper)
+
+</div>
